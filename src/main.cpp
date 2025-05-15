@@ -1,21 +1,12 @@
-#include <SFML/Graphics.hpp>
+#include "application.h"
 
 int main()
 {
-    auto window = sf::RenderWindow(sf::VideoMode({1920u, 1080u}), "CMake SFML Project");
-    window.setFramerateLimit(144);
+    std::string title = "Dennis + Markus";
+    sf::Vector2u resolution(1280, 720);
 
-    while (window.isOpen())
-    {
-        while (const std::optional event = window.pollEvent())
-        {
-            if (event->is<sf::Event::Closed>())
-            {
-                window.close();
-            }
-        }
+    Application app(title, resolution);
+    app.Run();
 
-        window.clear();
-        window.display();
-    }
+    return EXIT_SUCCESS;    
 }
