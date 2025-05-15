@@ -15,7 +15,10 @@ FetchContent_Declare(SFML
 FetchContent_MakeAvailable(SFML)
 
 # Add the executable for the project
-add_executable(main src/main.cpp src/application.cpp)
+file(GLOB_RECURSE SOURCES "src/*.cpp")
+
+# Add the executable with all source files collected
+add_executable(main ${SOURCES})
 
 # Ensure that the project uses C++17
 target_compile_features(main PRIVATE cxx_std_17)

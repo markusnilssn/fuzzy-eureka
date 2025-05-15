@@ -1,4 +1,5 @@
-#include "application.h"
+#include "Application.h"
+#include "ResourceManager.h"
 
 Application::Application(const std::string& title, const sf::Vector2u& size) 
     : title(title)
@@ -19,7 +20,7 @@ void Application::Run()
     {
         HandleEvents(window);
         Update();
-        window.clear();
+        window.clear(sf::Color::Black);
         Render(window);
         window.display();
     }
@@ -43,11 +44,21 @@ void Application::Update()
 
 void Application::Render(sf::RenderWindow& window) 
 {
-    // render color
-    sf::RectangleShape rectangle(sf::Vector2f(100, 100));
-    rectangle.setFillColor(sf::Color(255, 0, 0, 255));
-    rectangle.setPosition(sf::Vector2f(0,0));
+    // auto resource = ResourceManager::GetInstance().GetTexture("Ground/TexturedGrass.png");
+    
+    sf::Texture resource("resources/Ground/TexturedGrass.png");
+        
+    sf::Vector2f size(16, 16);
+    sf::Vector2u gridSize(16u, 16u);
+    // draw grid
+    for (int i = 0; i < gridSize.x; ++i)
+    {
+        for (int j = 0; j < gridSize.y; ++j)
+        {
+            sf::Sprite sprite(resource);
+            sprite.setPosition(sf::Vector2f(i * size.x, j * size.y));
+            window.draw(sprite);
+        }
+    }
 
-    // draw rectangle
-    window.draw(rectangle);
 }

@@ -2,6 +2,7 @@
 #include <SFML/Window.hpp>
 #include <SFML/Graphics.hpp>
 #include <SFML/System.hpp>
+
 #include <optional>
 #include <string>
 
@@ -18,4 +19,5 @@ private:
 
     std::string title;
     sf::Vector2u size;
+
 };
