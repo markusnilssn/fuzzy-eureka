@@ -11,4 +11,4 @@ public:
 private: 
     std::mt19937 generator;
 
-};
+}; 

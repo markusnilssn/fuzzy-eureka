@@ -23,5 +23,10 @@ add_executable(main ${SOURCES})
 # Ensure that the project uses C++17
 target_compile_features(main PRIVATE cxx_std_17)
 
+# Add root directories to the include path
+target_include_directories(main PRIVATE 
+    ${CMAKE_SOURCE_DIR}/src  # This ensures src is also included for header search
+)
+
 # Link the necessary SFML libraries
 target_link_libraries(main PRIVATE SFML::Graphics SFML::Window SFML::System)

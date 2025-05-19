@@ -1,12 +1,13 @@
-#include "Application.h"
+#include "FuzzyEureka.h"
 
 int main()
 {
-    std::string title = "Dennis + Markus";
-    sf::Vector2u resolution(1280, 720);
+    FuzzyEureka::Settings settings;
+    settings.title = "Application";
+    settings.windowSize = sf::Vector2u(1280, 720);
 
-    Application app(title, resolution);
-    app.Run();
+    FuzzyEureka app{};
+    app.Run(settings);
 
     return EXIT_SUCCESS;    
 }
