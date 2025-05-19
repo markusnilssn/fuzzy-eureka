@@ -14,10 +14,13 @@ public:
 
 private:
     void HandleEvents(sf::RenderWindow& window);
-    void Update();
+    void Update(const float deltaTime);
     void Render(sf::RenderWindow& window);
 
     std::string title;
     sf::Vector2u size;
+
+    sf::View camera;
+    sf::Clock clock;
 
 };
