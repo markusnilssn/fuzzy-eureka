@@ -7,6 +7,11 @@ Application::Application()
 
 }
 
+Application::~Application() 
+{
+    engine.Destroy();
+}
+
 void Application::Run(const Settings& settings) 
 {
     Debug::Log("Hello World!");
@@ -19,6 +24,7 @@ void Application::Run(const Settings& settings)
     window.setVerticalSyncEnabled(true); // Enable VSync
     window.setFramerateLimit(144);
 
+    engine.Start();
     Start();
 
     while (window.isOpen())
@@ -28,13 +34,16 @@ void Application::Run(const Settings& settings)
         HandleEvents(window);
         auto& input = Input::GetInstance();
         input.Update();
+        engine.Update(deltaTime);
         Update(deltaTime);
         // Rendering!
         window.clear(sf::Color::Black);
         Render(window);
+        engine.Render(window);
         window.display();
     }
 
+    engine.Destroy();
     Destroy();
 }
 

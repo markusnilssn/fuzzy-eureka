@@ -27,24 +27,24 @@ void EntityManager::DestroyEntity(Entity entity)
     Debug::Assert(entity < MAX_ENTITIES, "Entity out of range.");
     Debug::Assert(livingEntityCount > 0, "Destroying entity when none exist.");
 
-    signatures[entity].reset();
+    registries[entity].reset();
 
     availableEntities.push(entity);
     --livingEntityCount;
 }
 
-void EntityManager::SetSignature(Entity entity, Signature signature)
+void EntityManager::SetRegistry(Entity entity, Registry signature)
 {
     Debug::Assert(entity < MAX_ENTITIES, "Entity out of range.");
     Debug::Assert(livingEntityCount > 0, "Setting signature on entity when none exist.");
 
-    signatures[entity] = signature;
+    registries[entity] = signature;
 }
 
-Signature EntityManager::GetSignature(Entity entity)
+Registry EntityManager::GetRegistry(Entity entity)
 {
     Debug::Assert(entity < MAX_ENTITIES, "Entity out of range.");
     Debug::Assert(livingEntityCount > 0, "Getting signature on entity when none exist.");
 
-    return signatures[entity];
+    return registries[entity];
 }

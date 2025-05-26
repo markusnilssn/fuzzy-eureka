@@ -5,6 +5,7 @@
 
 #include <optional>
 #include <string>
+#include "Engine/Engine.h"
 
 class Application 
 {
@@ -17,6 +18,7 @@ public:
 
 public:
     Application();
+    virtual ~Application();
 
     void Run(const Settings& settings);
     
@@ -29,6 +31,7 @@ protected:
     virtual void Render(sf::RenderWindow& window) {}
     virtual void HandleEvent(const sf::Event& event) {}
 
+    Engine engine;
 private:
     void HandleEvents(sf::RenderWindow& window);
     // std::string title;

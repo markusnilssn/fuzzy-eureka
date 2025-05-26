@@ -7,7 +7,6 @@
 #include <array>
 #include <unordered_map>
 
-
 class IComponentArray {
 public:
 	virtual ~IComponentArray() = default;

@@ -6,12 +6,17 @@
 #include "SystemManager.h"  
 #include "EntityManager.h"
 
-class Engine {
+#include <typeinfo>
+
+class Engine final {
 public:
-    Engine();
+    explicit Engine();
 
     void Start();
     void Destroy();
+
+    void Update(const float deltaTime);
+    void Render(sf::RenderWindow& window);
 
     [[nodiscard]] Entity CreateEntity();
     void DestroyEntity(Entity entity);
@@ -25,14 +30,13 @@ public:
     void RemoveComponent(Entity entity);
     template<typename T>
     [[nodiscard]] T& GetComponent(Entity entity);
-    template<typename T>
-	[[nodiscard]] ComponentType GetComponentType(); 
 
-    template<typename T>
-    std::shared_ptr<T> RegisterSystem();
+	[[nodiscard]] ComponentType GetComponentType(const std::type_info& type); 
 
-    template<typename T>
-    void SetSystemSignature(Signature signature);
+    template<typename T, typename... Args>
+    std::shared_ptr<T> RegisterSystem(Args&&... args);
+
+    void SetSystemRegistry(const std::type_info& type, Registry signature);
 
 private:
     std::unique_ptr<ComponentManager> componentManager;
@@ -52,9 +56,10 @@ inline void Engine::AddComponent(Entity entity, T component)
 {
     componentManager->AddComponent<T>(entity, component);
 
-    auto signature = entityManager->GetSignature(entity);
-    signature.set(componentManager->GetComponentType<T>(), true);
-    entityManager->SetSignature(entity, signature);
+    auto signature = entityManager->GetRegistry(entity);
+    const std::type_info& type = typeid(T);
+    signature.set(componentManager->GetComponentType(type), true);
+    entityManager->SetRegistry(entity, signature);
 
     systemManager->EntitySignatureChanged(entity, signature);
 }
@@ -64,9 +69,10 @@ inline void Engine::RemoveComponent(Entity entity)
 {
     componentManager->RemoveComponent<T>(entity);
 
-    auto signature = entityManager->GetSignature(entity);
-    signature.set(componentManager->GetComponentType<T>(), false);
-    entityManager->SetSignature(entity, signature);
+    auto signature = entityManager->GetRegistry(entity);
+    const std::type_info& type = typeid(T);
+    signature.set(componentManager->GetComponentType(type), false);
+    entityManager->SetRegistry(entity, signature);
 
     systemManager->EntitySignatureChanged(entity, signature);
 }
@@ -77,20 +83,10 @@ inline T& Engine::GetComponent(Entity entity)
     return componentManager->GetComponent<T>(entity);
 }
 
-template<typename T>
-inline ComponentType Engine::GetComponentType()
+template<typename T, typename... Args>
+inline std::shared_ptr<T> Engine::RegisterSystem(Args&&... args)
 {
-    return componentManager->GetComponentType<T>();
-}
+    static_assert(std::is_base_of<System, T>::value, "T must be derived from System");
 
-template<typename T>
-inline std::shared_ptr<T> Engine::RegisterSystem()
-{
-    return systemManager->RegisterSystem<T>();
-}
-
-template<typename T>
-inline void Engine::SetSystemSignature(Signature signature)
-{
-    systemManager->SetSignature<T>(signature);
+    return systemManager->RegisterSystem<T>(*this, std::forward<Args>(args)...);
 }

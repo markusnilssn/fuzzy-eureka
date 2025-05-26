@@ -3,10 +3,11 @@
 #include "SFML/Graphics.hpp"
 #include "SFML/System.hpp"
 
-class RenderSystem : public System
+class Engine;
+class RenderSystem final : public System
 {
 public:
-    RenderSystem(Engine* engine);
+    explicit RenderSystem(Engine& engine);
 
     void Start() override;
     void Destroy() override;
@@ -14,6 +15,5 @@ public:
     void Render(sf::RenderWindow& window) override;
 
 private:
-    
 
 };

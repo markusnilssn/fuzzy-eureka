@@ -1,5 +1,7 @@
 #pragma once 
 #include "Engine/Application.h"
+#include <memory>
+#include "Grid.h"
 
 class FuzzyEureka final : public Application 
 { 
@@ -15,5 +17,10 @@ public:
 private:
     sf::View camera;
 
+    sf::Clock clock;
+    sf::Time currentTime;
+    sf::Time previousTime;
+
+    sf::Font font;
 
 };

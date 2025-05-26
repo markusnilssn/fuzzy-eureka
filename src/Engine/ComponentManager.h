@@ -10,11 +10,12 @@
 
 class ComponentManager {
 public:
+	ComponentManager();
+
 	template<typename T>
 	void RegisterComponent();
 
-    template<typename T>
-    [[nodiscard]] ComponentType GetComponentType();
+    [[nodiscard]] ComponentType GetComponentType(const std::type_info& type);
 
     template<typename T>
     void AddComponent(Entity entity, T component);
@@ -47,15 +48,6 @@ inline void ComponentManager::RegisterComponent()
 	++nextComponentType;
 }
 
-template <typename T>
-inline ComponentType ComponentManager::GetComponentType()
-{
-	const char* typeName = typeid(T).name();
-
-	Debug::Assert(componentTypes.find(typeName) != componentTypes.end(), "Component not registered before use.");
-
-	return componentTypes[typeName];
-}
 
 template <typename T>
 inline void ComponentManager::AddComponent(Entity entity, T component)

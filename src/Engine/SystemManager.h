@@ -1,47 +1,49 @@
 #pragma once
 #include "Entity.h"
-#include "System.h"
-#include "Signature.h"
-#include "Common/Debug.h"
-#include <unordered_map>
 
-class SystemManager
+#include "System.h"
+
+#include "Common/Debug.h"
+
+#include <unordered_map>
+#include <memory>
+#include <typeinfo>
+
+class SystemManager final
 {
 public:
-	template<typename T>
-	std::shared_ptr<T> RegisterSystem();
+	explicit SystemManager();
 
-    template<typename T>
-    void SetSignature(Signature signature);
+	void Start();
+	void Destroy();
+
+	void Update(float deltaTime);
+	void Render(sf::RenderWindow& window);
+
+	template<typename T, typename... Args>
+	inline std::shared_ptr<T> RegisterSystem(Engine& engine, Args&&... args);
+
+    void SetRegistry(const std::type_info& type, Registry registry);
 
 	void EntityDestroyed(Entity entity);
-	void EntitySignatureChanged(Entity entity, Signature entitySignature);
+	void EntitySignatureChanged(Entity entity, Registry entitySignature);
 
 private:
-	std::unordered_map<std::string, Signature> signatures;
+	std::unordered_map<std::string, Registry> registries;
 	std::unordered_map<std::string, std::shared_ptr<System>> systems;
     
 };
 
-template <typename T>
-inline std::shared_ptr<T> SystemManager::RegisterSystem()
+template <typename T, typename... Args>
+inline std::shared_ptr<T> SystemManager::RegisterSystem(Engine& engine, Args&&... args)
 {
+	static_assert(std::is_base_of<System, T>::value, "T must inherit from System");
+
 	const char* typeName = typeid(T).name();
 
 	Debug::Assert(systems.find(typeName) == systems.end(), "Registering system more than once.");
 
-	// Create a pointer to the system and return it so it can be used externally
-	auto system = std::make_shared<T>();
+	std::shared_ptr<T> system = std::make_shared<T>(engine, std::forward<Args>(args)...);
 	systems.insert({typeName, system});
 	return system;
-}
-
-template <typename T>
-inline void SystemManager::SetSignature(Signature signature)
-{
-	const char* typeName = typeid(T).name();
-
-	Debug::Assert(systems.find(typeName) != systems.end(), "System used before registered.");
-
-	signatures.insert({typeName, signature});
 }

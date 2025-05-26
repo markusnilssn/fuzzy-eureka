@@ -1,13 +1,15 @@
 #include "RenderSystem.h"
 #include "Engine.h"
-#include "Components.h"
+#include "TransformComponent.h"
+#include "SpriteComponent.h"
+#include <map>
+#include <list>
 
-RenderSystem::RenderSystem(Engine* engine)
+RenderSystem::RenderSystem(Engine& engine)
     : System(engine)
- 
 {
-    // RequireComponent<Sprite>();
-    // RequireComponent<Transform>();
+    RequireComponent<TransformComponent>();
+    RequireComponent<SpriteComponent>();
 }
 
 void RenderSystem::Start()
@@ -20,16 +22,31 @@ void RenderSystem::Destroy()
 
 }
 
+bool SortByLayer(const std::pair<uint_fast16_t, sf::Sprite>& a
+    , const std::pair<uint_fast16_t, sf::Sprite>& b)
+{
+    return a.first > b.first;
+}
+
 void RenderSystem::Render(sf::RenderWindow& window)
 {
+    // don't know if map order itself?
+    std::map<uint_fast16_t, std::list<sf::Sprite>> collection;
+    // Debug::Log(std::to_string(entities.size()));
     for(auto& entity : entities)
     {
-        auto& sprite = engine->GetComponent<SpriteComponent>(entity);
-        auto& transform = engine->GetComponent<TransformComponent>(entity);
+        auto& sprite = engine.GetComponent<SpriteComponent>(entity);
+        auto& transform = engine.GetComponent<TransformComponent>(entity);
+        
+        sf::Sprite drawable(sprite.texture);
+        drawable.setPosition(transform.position);
+        
+        collection[sprite.sortLayer].push_back(drawable);
+    }
 
-        sprite.sprite.setPosition(transform.position);
-        sprite.sprite.setRotation(transform.rotation);
-        sprite.sprite.setTexture(sprite.texture);
-        sprite.sprite.setTextureRect(sprite.bound);
+    for(auto& [layer, drawables] : collection)
+    {
+        for(auto& drawable : drawables)
+            window.draw(drawable);
     }
 }

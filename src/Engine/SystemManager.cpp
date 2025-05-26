@@ -1,6 +1,46 @@
 #include "SystemManager.h"
 
-void SystemManager::EntityDestroyed(Entity entity) 
+SystemManager::SystemManager()
+    : registries()
+    , systems()
+{
+
+}
+
+void SystemManager::Start() 
+{
+
+}
+void SystemManager::Destroy()
+{
+
+}
+
+void SystemManager::Update(float deltaTime)
+{
+    for (auto& [type, system] : systems)
+    {
+        system->Update(deltaTime);
+    }
+}
+void SystemManager::Render(sf::RenderWindow& window)
+{
+    for (auto& [type, system] : systems)
+    {
+        system->Render(window);
+    }
+}
+
+void SystemManager::SetRegistry(const std::type_info& type, Registry registry)
+{
+    const char* typeName = type.name();
+
+	Debug::Assert(systems.find(typeName) != systems.end(), "System used before registered.");
+
+	registries.insert({typeName, registry});
+}
+
+void SystemManager::EntityDestroyed(Entity entity)
 {
 	for (auto& [type, system] : systems)
     {
@@ -8,13 +48,13 @@ void SystemManager::EntityDestroyed(Entity entity)
     }
 }
 
-void SystemManager::EntitySignatureChanged(Entity entity, Signature entitySignature) 
+void SystemManager::EntitySignatureChanged(Entity entity, Registry entityRegistry) 
 {
     for (auto& [type, system] : systems)
     {
-        auto systemSignature = signatures[type];
+        auto systemRegistry = registries[type];
 
-        if ((entitySignature & systemSignature) == systemSignature)
+        if ((entityRegistry & systemRegistry) == systemRegistry)
         {
             system->InsertEntity(entity);
         }

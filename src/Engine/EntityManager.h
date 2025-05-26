@@ -1,22 +1,22 @@
 #pragma once 
 #include <queue>
 #include <array>
-#include "Signature.h"
+#include "Component.h"
 #include "Entity.h"
 
-class EntityManager {
+class EntityManager final {
 public:
-    EntityManager();
+    explicit EntityManager();
 
     [[nodiscard]] Entity CreateEntity();
     void DestroyEntity(Entity entity);
 
-    void SetSignature(Entity entity, Signature signature);
-	[[nodiscard]] Signature GetSignature(Entity entity);
+    void SetRegistry(Entity entity, Registry signature);
+	[[nodiscard]] Registry GetRegistry(Entity entity);
     
 private:
     std::queue<Entity> availableEntities;
-    std::array<Signature, MAX_ENTITIES> signatures;
+    std::array<Registry, MAX_ENTITIES> registries;
     Entity livingEntityCount;
 
 };
