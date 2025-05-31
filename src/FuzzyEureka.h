@@ -3,6 +3,7 @@
 #include <memory>
 #include "Grid.h"
 
+class AStarSystem;
 class FuzzyEureka final : public Application 
 { 
 public:
@@ -17,10 +18,14 @@ public:
 private:
     sf::View camera;
 
-    sf::Clock clock;
-    sf::Time currentTime;
-    sf::Time previousTime;
+    // sf::Clock clock;
+    // sf::Time currentTime;
+    // sf::Time previousTime;
 
-    sf::Font font;
+    // sf::Font font;
+
+    Entity monster;
+    AStarSystem* pathfinding;
+    std::shared_ptr<Grid> grid;
 
 };

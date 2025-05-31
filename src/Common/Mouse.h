@@ -12,12 +12,19 @@ public:
     const bool IsMouseButtonDown(sf::Mouse::Button button);
     const bool IsMouseButtonUp(sf::Mouse::Button button);
 
-    sf::Vector2i GetMousePosition();
-    sf::Vector2f GetMousePosition(const sf::RenderWindow& window);
-    bool IsMouseMoved();
+    const sf::Vector2i GetMousePosition();
+    const sf::Vector2f GetMousePosition(const sf::RenderWindow& window);
 
 private:
+    Mouse(sf::RenderWindow& window);
+
     std::unordered_map<sf::Mouse::Button, bool> mouseButtonStates;
+    std::unordered_map<sf::Mouse::Button, bool> previousMouseState;
+
+    sf::RenderWindow& window;
+
+    void RegisterMouseButton(sf::Mouse::Button button);
+
     sf::Vector2i mousePosition;
     void Update();
 

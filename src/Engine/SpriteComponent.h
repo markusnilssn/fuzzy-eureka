@@ -6,4 +6,5 @@ struct SpriteComponent
 {
     sf::Texture texture;
     uint_fast16_t sortLayer;
+    sf::Color color = sf::Color::White;
 };

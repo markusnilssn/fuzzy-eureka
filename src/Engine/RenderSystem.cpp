@@ -40,6 +40,7 @@ void RenderSystem::Render(sf::RenderWindow& window)
         
         sf::Sprite drawable(sprite.texture);
         drawable.setPosition(transform.position);
+        drawable.setColor(sprite.color);
         
         collection[sprite.sortLayer].push_back(drawable);
     }

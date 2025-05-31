@@ -6,15 +6,13 @@ class Input final
 {
     friend class Application;
 public:
-    static Input& GetInstance();
+    Input(sf::RenderWindow& window);
 
-public:
     Mouse& GetMouse();
     Keyboard& GetKeyboard();
-    
 
 private:
-    Input() = default;
+    sf::RenderWindow& window;
     
     Keyboard keyboard;
     Mouse mouse;

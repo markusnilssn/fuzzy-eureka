@@ -6,6 +6,7 @@
 #include <optional>
 #include <string>
 #include "Engine/Engine.h"
+#include "Common/Input.h"
 
 class Application 
 {
@@ -31,10 +32,15 @@ protected:
     virtual void Render(sf::RenderWindow& window) {}
     virtual void HandleEvent(const sf::Event& event) {}
 
+    sf::RenderWindow& GetWindow();
+    Input& GetInput();
+
     Engine engine;
 private:
     void HandleEvents(sf::RenderWindow& window);
-    // std::string title;
+    std::unique_ptr<Input> input;
+    std::unique_ptr<sf::RenderWindow> window;
+
     sf::Vector2u windowSize;
 
     sf::Clock clock;

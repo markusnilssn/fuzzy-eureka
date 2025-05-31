@@ -1,4 +1,6 @@
 #pragma once 
+#include "Engine/Entity.h"
+
 enum struct Resource 
 {
     None,
@@ -8,41 +10,20 @@ enum struct Resource
 };
 
 
-struct Node 
+class Node 
 {
-    using Index = int;
+    friend class Grid;
+public: 
+    int X() { return x; }
+    int Y() { return y; }
 
-    enum struct Type
-    {
-        Start,
-        End,
-        Blocked,
-        Walkable,
-    };
+    const bool IsLocked() { return blocked; }
+    const Entity Owner() { return owner; }
 
-    Index x;
-    Index y;
-
-    Type type;
-    Node* parent;
-    bool isBlocked;
-
-    float gCost;
-    float hCost;
-    float fCost() const { return gCost + hCost; }
-};
-
-struct Terrain 
-{
-    enum struct Type
-    {
-        Sand,
-        Grass,
-        Water,
-        Rock,
-    };
-
-    float elevation;
-    Type type;
-    Node* node;
+private:
+    int x;
+    int y;
+    Entity owner = InvalidEntity;
+    bool blocked = false;
+    
 };

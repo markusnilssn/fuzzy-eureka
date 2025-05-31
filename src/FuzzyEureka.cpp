@@ -8,87 +8,71 @@
 #include "Engine/RenderSystem.h"
 #include "Engine/Engine.h"
 
+#include "AStarSystem.h"
+
 #include "Node.h"
 
 FuzzyEureka::FuzzyEureka()
-    : font()
 {
     
 }
 
-
-void LoadFromPearlyNoise(const siv::PerlinNoise::seed_type seed, int width, int height, Engine& engine, const sf::Vector2i& nodeSize)
+void LoadFromPearlyNoise(const int width, const int height, const sf::Vector2i& nodeSize,  Engine& engine) 
 {
-        const siv::PerlinNoise   perlin{ seed };
-        const siv::PerlinNoise   lakeMaskNoise{ seed + 1 };
-        const double freq        = 0.12, lac = 2.5, gain = 0.5;
-        const size_t octs        = 5;
-        const double elevThresh  = -0.2;
-        const double lakeFreq    = 0.4;
-        const double lakeMaskMin = 0.2;
-std::stringstream ss;
-        for (int x = 0; x < width; ++x) {
-        for (int y = 0; y < height; ++y) {
-            double nx = double(x)/width, ny = double(y)/height;
-            // fBm height
-            double amp=1, f=freq, sum=0, aSum=0;
-            for (size_t o=0;o<octs;++o){
-            sum  += perlin.noise2D(f*nx,f*ny)*amp;
-            aSum += amp;
-            amp  *= gain; f *= lac;
-            }
-            double elevation = sum/aSum;
-            // lake mask
-            double lm = lakeMaskNoise.noise2D(lakeFreq*nx, lakeFreq*ny);
+    // const siv::PerlinNoise::seed_type seed = 12345u;
+    // const siv::PerlinNoise perlin{ seed };
 
-            bool isLake = (elevation < elevThresh) && (lm > lakeMaskMin);
-            int col = isLake ? 0 : 2;
+    // int octaves = 8;
+    // double frequency = 8.0f;
 
-            int column = (isLake) ? 2 : 0;
-            int row = 0;
+    // for(int x = 0; x < width; ++x)
+    // {
+    //     for(int y = 0; y < height; ++y)
+    //     {
+    //         const double fx = (frequency / image.width());
+	// 	    const double fy = (frequency / image.height());
 
-            Entity entity = engine.CreateEntity();
-            sf::Vector2f position(x * nodeSize.x, y * nodeSize.y);
-            engine.AddComponent(entity, TransformComponent{
-                .position = position,
-            });
-            std::string filePath = "resources/Ground/Grass.png";
-            sf::IntRect source({nodeSize.x * column, nodeSize.y * row}, nodeSize);
+    //         const sf::Color color(perlin.octave2D_01((x * fx), (y * fy), octaves));
 
-            engine.AddComponent(entity, SpriteComponent{
-                .texture = sf::Texture(filePath, false, source),
-                .sortLayer = 0,
-            });
 
-            ss << std::to_string(elevation);
-            ss << " ";
-        }
 
-        ss << "\n";
-    }
+    //         Entity entity = engine.CreateEntity();
+    //         engine.AddComponent(entity, TransformComponent{
+    //             .position = sf::Vector2f(x * nodeSize.x, y * nodeSize.y),
+    //         });
+    //         engine.AddComponent(entity, SpriteComponent{
+    //             .texture = sf::Texture("resources/Ground/Grass.png"),
+    //             .color = color
+    //         })
+    //     }
+    // }
 }
 
 void FuzzyEureka::Start()
 {
     engine.RegisterComponent<TransformComponent>(); 
     engine.RegisterComponent<SpriteComponent>();
+    engine.RegisterComponent<AStarComponent>();
     
     engine.RegisterSystem<RenderSystem>();
 
-    int width = 64;
-    int height = 64;
+    int width = 16;
+    int height = 16;
     sf::Vector2i nodeSize{16, 16};
-    // Grid grid(width, height, nodeSize);
-    LoadFromPearlyNoise(123456u, width, height, engine, nodeSize);
+    grid = std::make_shared<Grid>(width, height, nodeSize);
+    pathfinding = engine.RegisterSystem<AStarSystem>(grid).get();
 
-    Entity entity = engine.CreateEntity();
-    engine.AddComponent(entity, TransformComponent{
+    std::vector<Entity> entities;
+
+    monster = engine.CreateEntity();
+    engine.AddComponent(monster, TransformComponent{
         .position = sf::Vector2f(0,0)
     });
-    engine.AddComponent(entity, SpriteComponent{
-        .texture = sf::Texture("resources/Buildings/Wood/Barracks.png", false, sf::IntRect({0,0}, {16, 16})),
+    engine.AddComponent(monster, SpriteComponent{
+        .texture = sf::Texture("resources/Characters/Monsters/Slimes/KingSlimeBlue.png", false, sf::IntRect({0,0}, {16, 16})),
         .sortLayer = 1
     });
+    engine.AddComponent(monster, AStarComponent{});
 
     auto windowSize = GetWindowSize();
 
@@ -104,8 +88,8 @@ void FuzzyEureka::Destroy()
 
 void FuzzyEureka::Update(const float deltaTime)
 {
-    auto& keyboard = Input::GetInstance().GetKeyboard();
-
+    auto& keyboard = GetInput().GetKeyboard();
+    
     int horizontal = keyboard.HorizontalAxis();
     int vertical = keyboard.VerticalAxis();
 
@@ -115,15 +99,30 @@ void FuzzyEureka::Update(const float deltaTime)
         constexpr float speed = 100.0f;
         move *= speed * deltaTime; // Adjust speed as needed
         camera.move(move);
+    }
 
-        // std::string toString = "" + std::to_string(camera.getCenter().x)+ " " + std::to_string(camera.getCenter().y);
-        // Debug::Log(toString);
+
+    auto& mouse = GetInput().GetMouse();
+    if(mouse.IsMouseButtonPressed(sf::Mouse::Button::Left))
+    {
+        const auto& position = mouse.GetMousePosition(GetWindow());
+
+        Node* node = grid->NodeFromWorldPosition({(float)position.x, (float)position.y});
+        pathfinding->GoTo(monster, node);
+    }
+    if(mouse.IsMouseButtonPressed(sf::Mouse::Button::Right))
+    {
+        const auto& position = mouse.GetMousePosition(GetWindow());
+        Node* node = grid->NodeFromWorldPosition({(float)position.x, (float)position.y});
+        grid->Lock(node);
     }
 }
 
 void FuzzyEureka::Render(sf::RenderWindow& window)
 {
     window.setView(camera);
+    grid->Render(window);
+
 
     // currentTime = clock.getElapsedTime();
     // float fps = 1.0f / (currentTime.asSeconds() - previousTime.asSeconds()); // the asSeconds returns a float

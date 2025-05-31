@@ -8,6 +8,7 @@
 #include "Common/Debug.h"
 
 #include <set>
+#include <memory.h>
 
 class Engine;
 class System

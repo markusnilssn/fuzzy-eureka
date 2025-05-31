@@ -1,23 +1,41 @@
 #pragma once 
 #include "Engine/System.h"
-#include "Node.h"
 #include <list>
+#include <queue>
 
-class AStarComponent 
+class Grid;
+class Node;
+
+struct AStarComponent 
 {
-    Node* lastNode;
     Node* currentNode;
+    Node* lastNode;
+
+    Node* endNode;
 
     std::list<Node*> path;
 
-    bool isMoving;
-    bool onTarget;
+    float moveTick;
+
+    // bool isMoving;
+    // bool onTarget;
 };
 
 class AStarSystem final : public System
 {
 public:
-    AStarSystem(Engine& engine);
+    struct Weight
+    {
+        Node* parent;
+        
+        int gCost;
+        int hCost;
+
+        const float fCost() const { return gCost + hCost; }
+    };
+
+public:
+    explicit AStarSystem(Engine& engine, std::shared_ptr<Grid> grid);
 
     void Start() override;
     void Destroy() override;
@@ -25,11 +43,16 @@ public:
     void Update(float deltaTime) override;
     void Render(sf::RenderWindow& window) override;
 
-    void MoveEntity(Entity entity, const sf::Vector2f& move);
-
-    void OccupyNode(Entity entity, Node& node);
+    void GoTo(Entity entity, Node* node);
 
 private:
+    friend class FuzzyEureka;
+    
+    std::shared_ptr<Grid> grid;
+    static constexpr float moveSpeed = 20.0f;
 
+    std::list<Node*> FindPath(Node* startNode, Node* endNode);
+    Node* FindNodeWithLowestFCost(const std::list<Node *>& nodes, std::unordered_map<Node*, Weight>& costs);
+    static int GetDistanceBetweenNodes(Node* first, Node* second);
 
 };

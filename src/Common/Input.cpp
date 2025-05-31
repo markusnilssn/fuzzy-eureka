@@ -1,12 +1,14 @@
 #include "Input.h"
 
-Input& Input::GetInstance()
+Input::Input(sf::RenderWindow &window)
+    : window(window)
+    , mouse(window)
+    , keyboard(window)
 {
-    static Input instance;
-    return instance;
+    
 }
 
-Mouse& Input::GetMouse()
+Mouse &Input::GetMouse()
 {
     return mouse;
 }

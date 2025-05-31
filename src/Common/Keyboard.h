@@ -20,12 +20,14 @@ public:
     const int VerticalAxis();
 
 private:
-    Keyboard();
+    Keyboard(sf::RenderWindow& window);
     
     std::unordered_set<sf::Keyboard::Key> registeredKeys;
 
     std::unordered_map<sf::Keyboard::Key, bool> currentState;
     std::unordered_map<sf::Keyboard::Key, bool> previousState;
+
+    sf::RenderWindow& window;
 
     void Update();
 

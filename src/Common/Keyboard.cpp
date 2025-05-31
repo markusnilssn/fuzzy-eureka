@@ -5,7 +5,8 @@
 #define DEBUG_MODE 
 
 
-Keyboard::Keyboard()
+Keyboard::Keyboard(sf::RenderWindow& window)
+    : window(window)
 {  
     RegisterKey(sf::Keyboard::Key::Escape);
     RegisterKey(sf::Keyboard::Key::Space);
@@ -44,6 +45,11 @@ void Keyboard::UnregisterKey(sf::Keyboard::Key key)
 
 const bool Keyboard::IsKeyDown(sf::Keyboard::Key key)
 {
+    if(!window.hasFocus())
+    {
+        return false;
+    }
+
 #ifdef DEBUG_MODE    
     if(registeredKeys.find(key) == registeredKeys.end())
     {
@@ -72,6 +78,11 @@ const bool Keyboard::IsKeyUp(sf::Keyboard::Key key)
 
 const bool Keyboard::IsKeyPressed(sf::Keyboard::Key key)
 {
+    if(!window.hasFocus())
+    {
+        return false;
+    }
+    
 #ifdef DEBUG_MODE    
     if(registeredKeys.find(key) == registeredKeys.end())
     {
