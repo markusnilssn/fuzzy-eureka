@@ -15,6 +15,8 @@ public:
     {
         std::string title;
         sf::Vector2u windowSize;
+        unsigned int framelimit;
+        bool vsync;
     };
 
 public:

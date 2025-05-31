@@ -68,8 +68,9 @@ void FuzzyEureka::Start()
     engine.AddComponent(monster, TransformComponent{
         .position = sf::Vector2f(0,0)
     });
+    // "resources/Characters/Monsters/Slimes/KingSlimeBlue.png",  false, sf::IntRect({0,0}, {16, 16}
     engine.AddComponent(monster, SpriteComponent{
-        .texture = sf::Texture("resources/Characters/Monsters/Slimes/KingSlimeBlue.png", false, sf::IntRect({0,0}, {16, 16})),
+        .texture = sf::Texture("resources/Buildings/Wood/Keep.png", false, sf::IntRect({0,0}, {32, 32})),
         .sortLayer = 1
     });
     engine.AddComponent(monster, AStarComponent{});

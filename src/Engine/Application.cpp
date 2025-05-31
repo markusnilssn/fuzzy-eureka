@@ -25,8 +25,8 @@ void Application::Run(const Settings& settings)
     window = std::make_unique<sf::RenderWindow>(videoMode, settings.title);
     input = std::make_unique<Input>(*(window.get()));
 
-    window->setVerticalSyncEnabled(true); // Enable VSync
-    window->setFramerateLimit(144);
+    window->setVerticalSyncEnabled(settings.vsync); // Enable VSync
+    window->setFramerateLimit(settings.framelimit);
 
     engine.Start();
     Start();

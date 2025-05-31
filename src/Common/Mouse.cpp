@@ -59,21 +59,16 @@ const sf::Vector2i Mouse::GetMousePosition()
 
 const sf::Vector2f Mouse::GetMousePosition(const sf::RenderWindow& window)
 {
-    // 1) Raw pixel coords relative to the *backing* surface:
     sf::Vector2i raw = sf::Mouse::getPosition(window);
 
-    // 2) Logical window size (points) vs. view size (world units):
-    sf::Vector2u winSize   = window.getSize();          // e.g. {400, 300} on a 800×600 Retina window
-    sf::Vector2f viewSize  = window.getView().getSize(); // e.g. {800, 600} if you never zoomed or panned
+    sf::Vector2u windowSize   = window.getSize();          
+    sf::Vector2f viewSize  = window.getView().getSize(); 
 
-    // 3) Compute scale factors:
-    float scaleX = viewSize.x / static_cast<float>(winSize.x);
-    float scaleY = viewSize.y / static_cast<float>(winSize.y);
+    float scaleX = viewSize.x / static_cast<float>(windowSize.x);
+    float scaleY = viewSize.y / static_cast<float>(windowSize.y);
 
-    // 4) Apply them to your raw pixel coords:
-    sf::Vector2f corrected{ raw.x * scaleX, raw.y * scaleY };
+    sf::Vector2f corrected { raw.x * scaleX, raw.y * scaleY };
     return corrected;
-    // return window.mapPixelToCoords(sf::Mouse::getPosition());
 }
 
 void Mouse::RegisterMouseButton(sf::Mouse::Button button)

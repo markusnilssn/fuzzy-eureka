@@ -7,6 +7,4 @@ struct TransformComponent
 {
     sf::Vector2f position;
     float rotation;
-
-    void SetPosition(const sf::Vector2f& worldPosition) { position = worldPosition; }
 };

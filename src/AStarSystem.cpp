@@ -35,8 +35,6 @@ void AStarSystem::Update(float deltaTime)
         Node* mainNode = grid->NodeFromWorldPosition(transform.position);
         if(mainNode != nullptr) 
         {
-            // std::cout << "position " <<  transform.position.x << " " << transform.position.y << std::endl;
-            // std::cout << "mainNode " <<  mainNode->X() << " " << mainNode->Y() << std::endl;
             grid->Lock(mainNode, entity);
 
             if(navigation.lastNode != nullptr && navigation.lastNode != mainNode)
@@ -67,7 +65,7 @@ void AStarSystem::Update(float deltaTime)
             const auto& worldPosition = grid->WorldPositionFromNode(nodeToGoTo);
             if(transform.position != worldPosition && navigation.moveTick > 0.3f)
             {
-                transform.SetPosition(worldPosition);
+                transform.position = worldPosition;
                 navigation.moveTick = 0.0f;
 
                 navigation.path.pop_front();
@@ -148,7 +146,7 @@ std::list<Node *> AStarSystem::FindPath(Node *startNode, Node *endNode)
             auto containsInClosed = std::find(closedNodes.begin(), closedNodes.end(), node) != closedNodes.end();
             if(node->IsLocked() || containsInClosed) 
             {
-                // std::cout << "Locked " << node->X() << " " <<node->Y() << std::endl;
+                std::cout << "Locked " << node->X() << " " <<node->Y() << std::endl;
                 continue;
             }
 

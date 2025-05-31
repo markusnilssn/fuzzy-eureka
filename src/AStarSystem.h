@@ -16,9 +16,6 @@ struct AStarComponent
     std::list<Node*> path;
 
     float moveTick;
-
-    // bool isMoving;
-    // bool onTarget;
 };
 
 class AStarSystem final : public System
