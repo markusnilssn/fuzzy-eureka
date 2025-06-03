@@ -17,7 +17,6 @@ AStarSystem::AStarSystem(Engine& engine, std::shared_ptr<Grid> grid)
 void AStarSystem::Start()
 {
     // commandManager.RegisterListener()
-
 }
 
 void AStarSystem::Destroy()
@@ -27,47 +26,40 @@ void AStarSystem::Destroy()
 
 void AStarSystem::Update(float deltaTime) 
 {
-    for(auto& entity : entities)
+     for (auto& entity : entities)
     {
-        auto& transform = engine.GetComponent<TransformComponent>(entity);
+        auto& transform  = engine.GetComponent<TransformComponent>(entity);
         auto& navigation = engine.GetComponent<AStarComponent>(entity);
-        
-        Node* mainNode = grid->NodeFromWorldPosition(transform.position);
-        if(mainNode != nullptr) 
-        {
-            grid->Lock(mainNode, entity);
 
-            if(navigation.lastNode != nullptr && navigation.lastNode != mainNode)
+        sf::FloatRect rect{ transform.position, transform.size };
+
+        std::set<Node*> currentNodes = grid->NodesUnderRectangle(rect);
+
+        if (!currentNodes.empty())
+        {
+            for (Node* n : currentNodes)
+                grid->Lock(n, entity);
+
+            for (Node* old : navigation.lastNodes)
             {
-                grid->Unlock(navigation.lastNode);
+                if (old != nullptr && currentNodes.find(old) == currentNodes.end())
+                {
+                    grid->Unlock(old);
+                }
             }
         }
 
-        navigation.lastNode = mainNode;
-        
-        if(navigation.path.size() > 0)
+        navigation.lastNodes = std::move(currentNodes);
+
+        if (!navigation.path.empty())
         {
-            // navigation.isMoving = true;
             Node* nodeToGoTo = navigation.path.front();
+            sf::Vector2f destCenter = grid->WorldPositionFromNode(nodeToGoTo);
 
-            // if(nodeToGoTo->IsLocked())
-            // {
-            //     if(nodeToGoTo == navigation.endNode)
-            //     {
-            //         navigation.path.clear();
-            //     }
-            //     else 
-            //     {
-            //         navigation.path = FindPath(mainNode, navigation.endNode); // recalc
-            //     }
-            // }
-            
-            const auto& worldPosition = grid->WorldPositionFromNode(nodeToGoTo);
-            if(transform.position != worldPosition && navigation.moveTick > 0.3f)
+            if (transform.position != destCenter && navigation.moveTick > 0.3f)
             {
-                transform.position = worldPosition;
+                transform.position = destCenter;
                 navigation.moveTick = 0.0f;
-
                 navigation.path.pop_front();
             }
         }
@@ -75,118 +67,136 @@ void AStarSystem::Update(float deltaTime)
         navigation.moveTick += deltaTime;
     }
 }
-void AStarSystem::Render(sf::RenderWindow& window) { }
 
 void AStarSystem::GoTo(Entity entity, Node *node)
 {
     auto& navigation = engine.GetComponent<AStarComponent>(entity);
     auto& transform = engine.GetComponent<TransformComponent>(entity);
-    Node* mainNode = grid->NodeFromWorldPosition(transform.position);
-    auto path = FindPath(mainNode, node);
-    std::cout << "Path Size " << path.size() << std::endl;
 
-    navigation.path = path;    
+    Node* mainNode = grid->NodeFromWorldPosition(transform.position);
+
+    int xSize = transform.size.x / grid->GetNodeSize().x;
+    int ySize = transform.size.y / grid->GetNodeSize().y;
+
+    navigation.path = FindPath(mainNode, node, entity, sf::Vector2i{xSize, ySize});    
 }
 
-std::list<Node *> AStarSystem::FindPath(Node *startNode, Node *endNode)
+const bool AStarSystem::IsWalkable(Node *node, Entity entity, const sf::Vector2i &sizeInNodes)
 {
-    if(endNode == nullptr)
+    int baseX = node->X();
+    int baseY = node->Y();
+
+    for (int dx = 0; dx < sizeInNodes.x; ++dx)
+    {
+        for (int dy = 0; dy < sizeInNodes.y; ++dy)
+        {
+            int x = baseX + dx;
+            int y = baseY + dy;
+
+            Node* check = grid->GetNodeAt(x, y);
+            if (check != nullptr || check->IsLocked() && (check->Owner() != entity))
+                return false;
+        }
+    }
+    
+    return true;
+}
+
+std::list<Node *> AStarSystem::FindPath(Node *startNode, Node *endNode, Entity entity, const sf::Vector2i &sizeInNodes)
+{
+    if (endNode == nullptr || startNode == nullptr)
     {
         return std::list<Node*>();
     }
 
-    std::list<Node*> openNodes;
-    std::list<Node*> closedNodes;
-    
-    std::unordered_map<Node*, Weight> weights{};
-    
-    // Redirect to closest node
-    // if(endNode->IsLocked()) 
-    //     return std::list<Node*>();
-    
-    openNodes.push_back(startNode);
-    weights[startNode] = Weight{ /* parent=*/ nullptr,
-                             /* gCost=*/ 0,
-                             /* hCost=*/ GetDistanceBetweenNodes(startNode, endNode) };
-    
-    std::list<Node*> path;
-    Node* currentNode = nullptr;
-    while(openNodes.size() > 0)
+    std::list<Node*> openList;
+    std::list<Node*> closedList;
+    std::unordered_map<Node*, Weight> weights;
+
+    if (!IsWalkable(startNode, entity, sizeInNodes) || !IsWalkable(endNode, entity, sizeInNodes))
     {
-        currentNode = FindNodeWithLowestFCost(openNodes, weights);
-        // std::cout << currentNode->X() << " " << currentNode->Y() << std::endl;
-        openNodes.remove(currentNode);
-        closedNodes.push_back(currentNode);
+        return std::list<Node*>();
+    }
 
-        if(currentNode == endNode)
+    openList.push_back(startNode);
+    weights[startNode] = Weight {
+        .parent = nullptr,
+        .gCost  = 0,
+        .hCost  = GetDistanceBetweenNodes(startNode, endNode)
+    };
+
+    std::list<Node*> path;
+
+    while (!openList.empty())
+    {
+        Node* current = FindNodeWithLowestFCost(openList, weights);
+        openList.remove(current);
+        closedList.push_back(current);
+
+        if (current == endNode)
         {
-            Node* currentRetracedNode = endNode;
-            while(currentRetracedNode != startNode)
+            Node* retrace = endNode;
+            while (retrace != startNode)
             {
-                path.push_back(currentRetracedNode);
-                auto [it, inserted] = weights.try_emplace(currentRetracedNode, Weight{
-
-                });
-                auto& weight = (*it).second;
-                currentRetracedNode = weight.parent;
+                path.push_back(retrace);
+                retrace = weights[retrace].parent;
             }
 
-            path.reverse();
-            // openNodes.clear();
-            // closedNodes.clear();
-
-            // std::cout << "reversing list" << std::endl;
+            std::reverse(path.begin(), path.end());
             break;
         }
 
-        std::list<Node*> neighbors = grid->FindNeighbors(currentNode);
-        // std::cout << "neighbour" << neighbors.size() << std::endl;
-        for(auto node : neighbors)
+        std::list<Node*> neighbors = grid->FindNeighbors(current);
+        for (Node* node : neighbors)
         {
-            auto containsInClosed = std::find(closedNodes.begin(), closedNodes.end(), node) != closedNodes.end();
-            if(node->IsLocked() || containsInClosed) 
+            bool containsInClosed = (std::find(closedList.begin(), closedList.end(), node) != closedList.end());
+            if (containsInClosed) 
             {
-                std::cout << "Locked " << node->X() << " " <<node->Y() << std::endl;
                 continue;
             }
 
-            int stepCost = GetDistanceBetweenNodes(currentNode, node);
-            int currentG = (weights.count(currentNode) ? weights[currentNode].gCost : 0);
-            int tentativeG = currentG + stepCost;
-
-            auto [it, wasInserted] = weights.try_emplace(node, Weight{nullptr,
-                std::numeric_limits<int>::max(),  // initial gCost = “infinite”
-                0});
-            auto& neighborWeight = it->second;
-            neighborWeight.hCost = GetDistanceBetweenNodes(node, endNode);
-
-            if (tentativeG < neighborWeight.gCost)
+            if (!IsWalkable(node, entity, sizeInNodes)) 
             {
-                neighborWeight.gCost = tentativeG;
-                neighborWeight.parent = currentNode;
+                continue;
+            }
 
-                bool containsInOpen = (std::find(openNodes.begin(), openNodes.end(), node) != openNodes.end());
+            int distanceBetweenNodes = GetDistanceBetweenNodes(current, node);
+            int tentativeG = weights[current].gCost + distanceBetweenNodes;
+
+            auto [it, inserted] = weights.try_emplace(node, Weight{
+                .parent = nullptr,
+                .gCost  = std::numeric_limits<int>::max(),
+                .hCost  = 0
+            });
+            Weight& weight = it->second;
+            weight.hCost = GetDistanceBetweenNodes(node, endNode);
+
+            if (tentativeG < weight.gCost)
+            {
+                weight.gCost = tentativeG;
+                weight.parent = current;
+
+                bool containsInOpen = (std::find(openList.begin(), openList.end(), node) != openList.end());
                 if (!containsInOpen)
-                    openNodes.push_back(node);
-                // else: it was already in open, so no need to push again
+                    openList.push_back(node);
             }
         }
     }
 
-    if(path.size() <= 0)
+    if (path.empty())
     {
-        std::cout << "Start Node " << startNode->X() << " " << startNode->Y() << std::endl;
-        std::cout << "Start Node " << endNode->X() << " " << endNode->Y() << std::endl;
+        std::cout << "No path from (" << startNode->X() << "," << startNode->Y() << ") to (" << endNode->X() << "," << endNode->Y() << ").\n";
     }
-    
-    // std::cout << "Sizeof " << path.size() << std::endl;
+
     return path;
 }
 
 Node *AStarSystem::FindNodeWithLowestFCost(const std::list<Node *>& nodes, std::unordered_map<Node*, Weight>& weights)
 {
     if (nodes.size() == 1)
+    {
         return nodes.front();
+    }
 
     Node* lowest = nodes.front();
 

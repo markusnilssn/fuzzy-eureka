@@ -6,10 +6,11 @@
 class Grid;
 class Node;
 
+// cloud be a local set 
 struct AStarComponent 
-{
-    Node* currentNode;
-    Node* lastNode;
+{   
+    std::set<Node*> currentNodes;
+    std::set<Node*> lastNodes;
 
     Node* endNode;
 
@@ -38,7 +39,6 @@ public:
     void Destroy() override;
 
     void Update(float deltaTime) override;
-    void Render(sf::RenderWindow& window) override;
 
     void GoTo(Entity entity, Node* node);
 
@@ -46,9 +46,11 @@ private:
     friend class FuzzyEureka;
     
     std::shared_ptr<Grid> grid;
+    
     static constexpr float moveSpeed = 20.0f;
 
-    std::list<Node*> FindPath(Node* startNode, Node* endNode);
+    const bool IsWalkable(Node* node, Entity entity, const sf::Vector2i& sizeInNodes);
+    std::list<Node*> FindPath(Node* startNode, Node* endNode, Entity entity, const sf::Vector2i& sizeInNodes);
     Node* FindNodeWithLowestFCost(const std::list<Node *>& nodes, std::unordered_map<Node*, Weight>& costs);
     static int GetDistanceBetweenNodes(Node* first, Node* second);
 

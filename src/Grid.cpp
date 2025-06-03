@@ -2,6 +2,8 @@
 #include "Common/Debug.h"
 #include <iostream>
 
+#include <set>
+
 Grid::Grid(const int width, const int height, const sf::Vector2i& nodeSize)
     : nodes(nullptr)
     , width(width)
@@ -22,21 +24,27 @@ Grid::Grid(const int width, const int height, const sf::Vector2i& nodeSize)
         }
     }
 
-    for (int x = 0; x < width; ++x) 
-    {
-        for (int y = 0; y < height; y++)
-        {
-            std::cout << nodes[x][y].X() << " " << nodes[x][y].Y() << std::endl;
-        }
-    }
+    // for (int x = 0; x < width; ++x) 
+    // {
+    //     for (int y = 0; y < height; y++)
+    //     {
+    //         std::cout << nodes[x][y].X() << " " << nodes[x][y].Y() << std::endl;
+    //     }
+    // }
 }
 
-std::list<Node*> Grid::NodesUnderRectangle(const sf::IntRect &rectangle)
+std::set<Node*> Grid::NodesUnderRectangle(const sf::FloatRect& rectangle)
 {
-    Node* topLeft = NodeFromWorldPosition(sf::Vector2f(rectangle.position.x, rectangle.position.y));
-    Node* bottomRight = NodeFromWorldPosition(sf::Vector2f(rectangle.position.x + rectangle.size.x, rectangle.position.y + rectangle.size.y));
+    Node* topLeft = NodeFromWorldPosition(rectangle.position);
+    Node* bottomRight = NodeFromWorldPosition(rectangle.position + sf::Vector2f(rectangle.size.x - nodeSize.x, rectangle.size.y - nodeSize.y)); // offset 
 
-    std::list<Node*> returnValue;
+    // std::cout << rectangle.position.x << " " << rectangle.position.y << std::endl;
+    // std::cout << rectangle.size.x << " " << rectangle.size.y << std::endl;
+
+    // std::cout << topLeft->x << " " << topLeft->y << std::endl;
+    // std::cout << bottomRight->x << " " << bottomRight->y << std::endl;
+
+    std::set<Node*> returnValue;
 
     int xLeft = std::min(topLeft->x, bottomRight->x);
     int xRight = std::max(topLeft->x, bottomRight->x);
@@ -47,22 +55,25 @@ std::list<Node*> Grid::NodesUnderRectangle(const sf::IntRect &rectangle)
     {
         for (int y = yTop; y <= yBottom; ++y)
         {
+            // std::cout << x << " " << y << std::endl;
             if (x < 0 || x >= width || y < 0 || y >= height)
             {
+                // std::cout << "Skipping" << std::endl;
                 continue;
             }
 
-            returnValue.push_back(&nodes[x][y]);
+            returnValue.insert(&nodes[x][y]);
         }
     }
 
+    // std::cout << "return " << returnValue.size() << std::endl;
     return returnValue;
 }
 
-std::list<Node*> Grid::NodesUnderCircle(const sf::CircleShape &circle)
+std::set<Node*> Grid::NodesUnderCircle(const sf::CircleShape &circle)
 {
     Node* center = NodeFromWorldPosition(circle.getPosition());
-    std::list<Node*> returnValue;
+    std::set<Node*> returnValue;
 
     for (int x = -circle.getRadius(); x <= circle.getRadius(); ++x)
     {
@@ -78,7 +89,7 @@ std::list<Node*> Grid::NodesUnderCircle(const sf::CircleShape &circle)
                     continue;
                 }
 
-                returnValue.push_back(&nodes[nodeX][nodeY]);
+                returnValue.insert(&nodes[nodeX][nodeY]);
             }
         }
     }
@@ -191,9 +202,8 @@ const sf::Vector2f Grid::WorldPositionFromNode(Node* node)
 }
 
 
-void Grid::Lock(Node *node, Entity entity)
+void Grid::Lock(Node* node, Entity entity)
 {
-    
     if(node == nullptr)
     {  
         Debug::LogWarning("Trying to lock a nullptr object");
@@ -202,9 +212,10 @@ void Grid::Lock(Node *node, Entity entity)
 
     node->blocked = true;
     node->owner = entity;
+
 }
 
-void Grid::Unlock(Node *node)
+void Grid::Unlock(Node* node)
 {
     if(node == nullptr)
     {
@@ -214,12 +225,14 @@ void Grid::Unlock(Node *node)
 
     node->blocked = false;
     node->owner = InvalidEntity;
+   
 }
 
-// Node **Grid::GetNodes() const
-// {
-//     return nodes;
-// }
+const bool Grid::IsInsideGrid(int x, int y)
+{
+    return x >= 0 && x < width && y >= 0 && y < height;
+}
+
 
 const long Grid::GetWidth() const
 {
@@ -236,8 +249,11 @@ const sf::Vector2i &Grid::GetNodeSize() const
     return nodeSize;
 }
 
-Node* Grid::GetNode(const int x, const int y)
+Node* Grid::GetNodeAt(const int x, const int y)
 {
+    if(!IsInsideGrid(x, y))
+        return nullptr;
+
     return &nodes[x][y];
 }
 

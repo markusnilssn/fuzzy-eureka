@@ -66,7 +66,9 @@ void FuzzyEureka::Start()
 
     monster = engine.CreateEntity();
     engine.AddComponent(monster, TransformComponent{
-        .position = sf::Vector2f(0,0)
+        .position = sf::Vector2f(0,0),
+        .size = sf::Vector2f(32, 32),
+        .angle = sf::degrees(0),
     });
     // "resources/Characters/Monsters/Slimes/KingSlimeBlue.png",  false, sf::IntRect({0,0}, {16, 16}
     engine.AddComponent(monster, SpriteComponent{
@@ -102,7 +104,6 @@ void FuzzyEureka::Update(const float deltaTime)
         camera.move(move);
     }
 
-
     auto& mouse = GetInput().GetMouse();
     if(mouse.IsMouseButtonPressed(sf::Mouse::Button::Left))
     {
@@ -115,7 +116,11 @@ void FuzzyEureka::Update(const float deltaTime)
     {
         const auto& position = mouse.GetMousePosition(GetWindow());
         Node* node = grid->NodeFromWorldPosition({(float)position.x, (float)position.y});
-        grid->Lock(node);
+        if(!node->IsLocked())
+            grid->Lock(node);
+        else
+            grid->Unlock(node);
+        
     }
 }
 

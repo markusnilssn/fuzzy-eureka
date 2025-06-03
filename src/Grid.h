@@ -1,18 +1,20 @@
 #pragma once
 #include "Node.h"
-#include <list>
 #include <SFML/System.hpp>
 #include <SFML/Graphics.hpp>
 #include <SFML/Window.hpp>
 #include "PearlyNoise.hpp"
+
+#include <list>
+#include <set>
 
 class Grid 
 {
 public:
     explicit Grid(const int width, const int height, const sf::Vector2i& nodeSize);
 
-    std::list<Node*> NodesUnderRectangle(const sf::IntRect& rectangle); // Nodes within a rectangle
-    std::list<Node*> NodesUnderCircle(const sf::CircleShape& circle); // Nodes within a circle
+    std::set<Node*> NodesUnderRectangle(const sf::FloatRect& rectangle); // Nodes within a rectangle
+    std::set<Node*> NodesUnderCircle(const sf::CircleShape& circle); // Nodes within a circle
 
     Node* NearestNode(Node* node); // Nearest to target that's not blocked
     std::list<Node*> NodesInRange(Node* node, float range); // Nodes within a range
@@ -21,15 +23,17 @@ public:
     Node* NodeFromWorldPosition(const sf::Vector2f& worldPosition); 
     const sf::Vector2f WorldPositionFromNode(Node* node);
 
-    void Lock(Node* node, Entity entity = InvalidEntity);
-    void Unlock(Node* node);
+    void Lock(Node* nodes, Entity entity = InvalidEntity);
+    void Unlock(Node* nodes);
+
+    const bool IsInsideGrid(int x, int y);
     
     [[nodiscard]] const long GetWidth() const;
     [[nodiscard]] const long GetHeight() const;
 
     [[nodiscard]] const sf::Vector2i& GetNodeSize() const;
 
-    Node* GetNode(const int x, const int y);
+    Node* GetNodeAt(const int x, const int y);
 
     // debug! 
     void Render(sf::RenderWindow& window);
