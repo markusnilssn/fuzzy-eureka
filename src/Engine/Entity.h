@@ -1,7 +1,7 @@
 #pragma once
 #include <stdint.h>
 
-using Entity = uint32_t;
+using Entity = int32_t;
 
 constexpr Entity InvalidEntity = -1;
 

@@ -189,7 +189,6 @@ Node* Grid::NodeFromWorldPosition(const sf::Vector2f &worldPosition)
 
     if (x < 0 || x >= width || y < 0 || y >= height)
     {
-        // return &nodes[0][0];
         return nullptr;
     }
 
@@ -225,7 +224,6 @@ void Grid::Unlock(Node* node)
 
     node->blocked = false;
     node->owner = InvalidEntity;
-   
 }
 
 const bool Grid::IsInsideGrid(int x, int y)

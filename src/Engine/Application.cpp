@@ -37,6 +37,8 @@ void Application::Run(const Settings& settings)
 
         HandleEvents(*window);  
         input->Update();
+
+        messageQueue.Update();
         engine.Update(deltaTime);
         Update(deltaTime);
 
@@ -47,8 +49,8 @@ void Application::Run(const Settings& settings)
         window->display();
     }
 
-    engine.Destroy();
     Destroy();
+    engine.Destroy();
 }
 
 const sf::Vector2u &Application::GetWindowSize() const

@@ -8,6 +8,8 @@
 #include "Engine/Engine.h"
 #include "Common/Input.h"
 
+#include "MessageQueue.h"
+
 class Application 
 {
 public:
@@ -38,6 +40,7 @@ protected:
     Input& GetInput();
 
     Engine engine;
+    MessageQueue messageQueue;
 private:
     void HandleEvents(sf::RenderWindow& window);
     std::unique_ptr<Input> input;

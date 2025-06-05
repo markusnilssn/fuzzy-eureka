@@ -11,6 +11,7 @@
 #include "AStarSystem.h"
 
 #include "Node.h"
+#include "GameMessages.h"
 
 FuzzyEureka::FuzzyEureka()
 {
@@ -60,7 +61,9 @@ void FuzzyEureka::Start()
     int height = 16;
     sf::Vector2i nodeSize{16, 16};
     grid = std::make_shared<Grid>(width, height, nodeSize);
-    pathfinding = engine.RegisterSystem<AStarSystem>(grid).get();
+
+
+    pathfinding = engine.RegisterSystem<AStarSystem>(messageQueue, *(grid.get())).get();
 
     std::vector<Entity> entities;
 
@@ -110,7 +113,8 @@ void FuzzyEureka::Update(const float deltaTime)
         const auto& position = mouse.GetMousePosition(GetWindow());
 
         Node* node = grid->NodeFromWorldPosition({(float)position.x, (float)position.y});
-        pathfinding->GoTo(monster, node);
+       
+        messageQueue.Send<MoveEntity>(node, monster);
     }
     if(mouse.IsMouseButtonPressed(sf::Mouse::Button::Right))
     {

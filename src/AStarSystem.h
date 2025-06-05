@@ -3,8 +3,8 @@
 #include <list>
 #include <queue>
 
-class Grid;
-class Node;
+#include "Engine/MessageQueue.h"
+#include "Grid.h"
 
 // cloud be a local set 
 struct AStarComponent 
@@ -21,7 +21,6 @@ struct AStarComponent
 
 class AStarSystem final : public System
 {
-public:
     struct Weight
     {
         Node* parent;
@@ -33,19 +32,18 @@ public:
     };
 
 public:
-    explicit AStarSystem(Engine& engine, std::shared_ptr<Grid> grid);
+    explicit AStarSystem(Engine& engine, MessageQueue& messageQueue, Grid& grid);
 
     void Start() override;
     void Destroy() override;
 
     void Update(float deltaTime) override;
 
-    void GoTo(Entity entity, Node* node);
-
 private:
     friend class FuzzyEureka;
     
-    std::shared_ptr<Grid> grid;
+    Grid& grid;
+    MessageQueue& messageQueue;
     
     static constexpr float moveSpeed = 20.0f;
 

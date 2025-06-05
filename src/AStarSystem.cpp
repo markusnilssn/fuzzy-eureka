@@ -5,9 +5,11 @@
 #include "Engine/TransformComponent.h"
 
 #include <iostream>
+#include "GameMessages.h"
 
-AStarSystem::AStarSystem(Engine& engine, std::shared_ptr<Grid> grid)
+AStarSystem::AStarSystem(Engine& engine, MessageQueue& messageQueue, Grid& grid)
     : System(engine)
+    , messageQueue(messageQueue)
     , grid(grid)
 {
     RequireComponent<TransformComponent>();
@@ -16,7 +18,20 @@ AStarSystem::AStarSystem(Engine& engine, std::shared_ptr<Grid> grid)
 
 void AStarSystem::Start()
 {
-    // commandManager.RegisterListener()
+    messageQueue.Subscribe<MoveEntity>([this](const MoveEntity& data)
+    {
+        auto& navigation = engine.GetComponent<AStarComponent>(data.entity);
+        auto& transform = engine.GetComponent<TransformComponent>(data.entity);
+
+        Node* mainNode = grid.NodeFromWorldPosition(transform.position);
+
+        int xSize = transform.size.x / grid.GetNodeSize().x;
+        int ySize = transform.size.y / grid.GetNodeSize().y;
+
+        navigation.path = FindPath(mainNode, data.node, data.entity, sf::Vector2i{xSize, ySize});   
+        std::cout << navigation.path.size() << std::endl;
+        std::cout << "x: " << data.node->X() << " y: " << data.node->Y() << " Entity " << data.entity << std::endl;
+    });
 }
 
 void AStarSystem::Destroy()
@@ -33,18 +48,18 @@ void AStarSystem::Update(float deltaTime)
 
         sf::FloatRect rect{ transform.position, transform.size };
 
-        std::set<Node*> currentNodes = grid->NodesUnderRectangle(rect);
+        std::set<Node*> currentNodes = grid.NodesUnderRectangle(rect);
 
         if (!currentNodes.empty())
         {
             for (Node* n : currentNodes)
-                grid->Lock(n, entity);
+                grid.Lock(n, entity);
 
             for (Node* old : navigation.lastNodes)
             {
                 if (old != nullptr && currentNodes.find(old) == currentNodes.end())
                 {
-                    grid->Unlock(old);
+                    grid.Unlock(old);
                 }
             }
         }
@@ -54,11 +69,11 @@ void AStarSystem::Update(float deltaTime)
         if (!navigation.path.empty())
         {
             Node* nodeToGoTo = navigation.path.front();
-            sf::Vector2f destCenter = grid->WorldPositionFromNode(nodeToGoTo);
+            sf::Vector2f destination = grid.WorldPositionFromNode(nodeToGoTo);
 
-            if (transform.position != destCenter && navigation.moveTick > 0.3f)
+            if (transform.position != destination && navigation.moveTick > 0.3f)
             {
-                transform.position = destCenter;
+                transform.position = destination;
                 navigation.moveTick = 0.0f;
                 navigation.path.pop_front();
             }
@@ -66,19 +81,6 @@ void AStarSystem::Update(float deltaTime)
 
         navigation.moveTick += deltaTime;
     }
-}
-
-void AStarSystem::GoTo(Entity entity, Node *node)
-{
-    auto& navigation = engine.GetComponent<AStarComponent>(entity);
-    auto& transform = engine.GetComponent<TransformComponent>(entity);
-
-    Node* mainNode = grid->NodeFromWorldPosition(transform.position);
-
-    int xSize = transform.size.x / grid->GetNodeSize().x;
-    int ySize = transform.size.y / grid->GetNodeSize().y;
-
-    navigation.path = FindPath(mainNode, node, entity, sf::Vector2i{xSize, ySize});    
 }
 
 const bool AStarSystem::IsWalkable(Node *node, Entity entity, const sf::Vector2i &sizeInNodes)
@@ -93,9 +95,11 @@ const bool AStarSystem::IsWalkable(Node *node, Entity entity, const sf::Vector2i
             int x = baseX + dx;
             int y = baseY + dy;
 
-            Node* check = grid->GetNodeAt(x, y);
-            if (check != nullptr || check->IsLocked() && (check->Owner() != entity))
+            Node* check = grid.GetNodeAt(x, y);
+            if (check != nullptr && check->IsLocked() && check->Owner() != entity)
+            {
                 return false;
+            }
         }
     }
     
@@ -106,6 +110,7 @@ std::list<Node *> AStarSystem::FindPath(Node *startNode, Node *endNode, Entity e
 {
     if (endNode == nullptr || startNode == nullptr)
     {
+        std::cout << "Unable to walk from or to node" << std::endl;
         return std::list<Node*>();
     }
 
@@ -115,6 +120,7 @@ std::list<Node *> AStarSystem::FindPath(Node *startNode, Node *endNode, Entity e
 
     if (!IsWalkable(startNode, entity, sizeInNodes) || !IsWalkable(endNode, entity, sizeInNodes))
     {
+        std::cout << "Unable to walk from or to node" << std::endl;
         return std::list<Node*>();
     }
 
@@ -146,7 +152,7 @@ std::list<Node *> AStarSystem::FindPath(Node *startNode, Node *endNode, Entity e
             break;
         }
 
-        std::list<Node*> neighbors = grid->FindNeighbors(current);
+        std::list<Node*> neighbors = grid.FindNeighbors(current);
         for (Node* node : neighbors)
         {
             bool containsInClosed = (std::find(closedList.begin(), closedList.end(), node) != closedList.end());

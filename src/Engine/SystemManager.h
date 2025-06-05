@@ -45,5 +45,6 @@ inline std::shared_ptr<T> SystemManager::RegisterSystem(Engine& engine, Args&&..
 
 	std::shared_ptr<T> system = std::make_shared<T>(engine, std::forward<Args>(args)...);
 	systems.insert({typeName, system});
+	system->Start();
 	return system;
 }
