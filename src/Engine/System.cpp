@@ -6,9 +6,7 @@
 System::System(Engine& engine)
     : engine(engine)
 {
-    // Register the system with the engine
-    // engine.SetSystemRegistry(typeid(*this), registry);
-    // engine.SetSystemRegistry<>(registry);
+
 }
 
 System::~System() = default;
@@ -36,7 +34,7 @@ void System::InsertEntity(Entity entity)
     OnEntityAdded(entity);
 }
 
-ComponentType System::GetComponentType(const std::type_info &type) const
+ComponentType System::GetComponentType(std::type_index type) const
 {
     return engine.GetComponentType(type);
 }

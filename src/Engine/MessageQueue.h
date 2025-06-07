@@ -34,11 +34,6 @@ public:
 private:
     std::unordered_map<size_t, std::list<Subscriber>> subscribers;
     std::queue<std::pair<size_t, std::unique_ptr<Message>>> messages;
-
-    size_t GetHashCode(const std::string& typeName)
-    {
-        return std::hash<std::string>{}(typeName);
-    }
     
 };
 
@@ -47,8 +42,7 @@ inline void MessageQueue::Send(Args&&... args)
 {
     static_assert(std::is_base_of<Message, T>::value, "T must be derived from Message");
 
-    const char* typeName = typeid(T).name();
-    size_t hashCode = GetHashCode(typeName);
+    size_t hashCode = typeid(T).hash_code();
 
     std::unique_ptr<T> message = std::make_unique<T>(std::forward<Args>(args)...);
 
@@ -60,8 +54,7 @@ inline void MessageQueue::Subscribe(std::function<void(const T&)> callback)
 {
     static_assert(std::is_base_of<Message, T>::value, "T must be derived from Message");
 
-    const char* typeName = typeid(T).name();
-    size_t hashCode = GetHashCode(typeName);
+    size_t hashCode = typeid(T).hash_code();
 
     Subscriber subscriber{};
     subscriber.callback = [callback](const Message& message)

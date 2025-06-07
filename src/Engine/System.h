@@ -9,6 +9,14 @@
 
 #include <set>
 #include <memory.h>
+#include <typeindex>
+#include <list>
+#include <tuple>
+#include <vector>
+
+#include "Engine.h"
+
+#include <iostream>
 
 class Engine;
 class System
@@ -35,9 +43,6 @@ public:
     void InsertEntity(Entity entity);
 
 protected:
-    Engine& engine;
-    std::set<Entity> entities;
-
     template<typename T>
     void RequireComponent()
     {
@@ -45,11 +50,46 @@ protected:
 
         auto componentType = GetComponentType(type);
 
-        registry.set(componentType);
+        signature.set(componentType);
     }
 
-private:
-    Registry registry;
+    template<typename... Ts>
+    [[nodiscard]] std::vector<std::type_index> ComponentTypes()
+    {
+        if constexpr (sizeof...(Ts) == 0)
+            return std::vector<std::type_index>();
+            
+        return { std::type_index(typeid(Ts))... };
+    }
 
-    [[nodiscard]] ComponentType GetComponentType(const std::type_info& type) const;    
+    template<typename... Ts>
+    [[nodiscard]] std::vector<std::pair<Entity, std::tuple<Ts&...>>> EntitiesWith()
+    {
+        // Build these when a entity gets inserted within the system 
+        std::vector<std::type_index> componentTypes = ComponentTypes<Ts...>();
+        Signature requirements{};
+        for(std::type_index componentType : componentTypes)
+            requirements.set(GetComponentType(componentType));
+        
+        std::vector<std::pair<Entity, std::tuple<Ts&...>>> returnValue;
+        for(auto& entity : entities)
+        {
+            Signature signature = engine.GetEntitySignature(entity);
+            if((signature & requirements) == requirements)
+            {   
+                // std::make_tuple makes an copy, std::tie creates an reference https://en.cppreference.com/w/cpp/utility/tuple/tie
+                auto tuple = std::tie(engine.GetComponent<Ts>(entity)...);  
+                returnValue.emplace_back(std::make_pair(entity, tuple));
+            }
+        }
+
+        return returnValue;
+    }
+
+    Engine& engine; // Move to private 
+private:
+    Signature signature;
+    std::set<Entity> entities;
+
+    [[nodiscard]] ComponentType GetComponentType(std::type_index type) const;    
 };

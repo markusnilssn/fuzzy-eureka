@@ -1,14 +1,19 @@
 #pragma once
-#include "Entity.h"
+#include <SFML/Window.hpp>
+#include <SFML/Graphics.hpp>
 
-#include "System.h"
+#include "Entity.h"
+#include "Signature.h"
 
 #include "Common/Debug.h"
 
 #include <unordered_map>
 #include <memory>
+#include <typeindex>
 #include <typeinfo>
 
+class System;
+class Engine;
 class SystemManager final
 {
 public:
@@ -23,14 +28,14 @@ public:
 	template<typename T, typename... Args>
 	inline std::shared_ptr<T> RegisterSystem(Engine& engine, Args&&... args);
 
-    void SetRegistry(const std::type_info& type, Registry registry);
+    void SetSignature(std::type_index type, Signature signature);
 
 	void EntityDestroyed(Entity entity);
-	void EntitySignatureChanged(Entity entity, Registry entitySignature);
+	void EntitySignatureChanged(Entity entity, Signature entitySignature);
 
 private:
-	std::unordered_map<std::string, Registry> registries;
-	std::unordered_map<std::string, std::shared_ptr<System>> systems;
+	std::unordered_map<std::type_index, Signature> signatures;
+	std::unordered_map<std::type_index, std::shared_ptr<System>> systems;
     
 };
 
@@ -39,12 +44,11 @@ inline std::shared_ptr<T> SystemManager::RegisterSystem(Engine& engine, Args&&..
 {
 	static_assert(std::is_base_of<System, T>::value, "T must inherit from System");
 
-	const char* typeName = typeid(T).name();
+	std::type_index type(typeid(T));
 
-	Debug::Assert(systems.find(typeName) == systems.end(), "Registering system more than once.");
+	Debug::Assert(systems.find(type) == systems.end(), "Registering system more than once.");
 
 	std::shared_ptr<T> system = std::make_shared<T>(engine, std::forward<Args>(args)...);
-	systems.insert({typeName, system});
-	system->Start();
+	systems.insert({type, system});
 	return system;
 }

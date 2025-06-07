@@ -1,11 +1,14 @@
 #pragma once
 #include <unordered_map>
 #include <memory>
+#include <SFML/Window.hpp>
+#include <SFML/Graphics.hpp>
 
 #include "ComponentManager.h"
 #include "SystemManager.h"  
 #include "EntityManager.h"
 
+#include <typeinfo>
 #include <typeinfo>
 
 class Engine final {
@@ -31,12 +34,14 @@ public:
     template<typename T>
     [[nodiscard]] T& GetComponent(Entity entity);
 
-	[[nodiscard]] ComponentType GetComponentType(const std::type_info& type); 
+	[[nodiscard]] ComponentType GetComponentType(std::type_index type); 
 
     template<typename T, typename... Args>
     std::shared_ptr<T> RegisterSystem(Args&&... args);
 
-    void SetSystemRegistry(const std::type_info& type, Registry signature);
+    Signature GetEntitySignature(Entity entity);
+
+    void SetSystemSignature(std::type_index type, Signature signature);
 
 private:
     std::unique_ptr<ComponentManager> componentManager;
@@ -56,10 +61,10 @@ inline void Engine::AddComponent(Entity entity, T component)
 {
     componentManager->AddComponent<T>(entity, component);
 
-    auto signature = entityManager->GetRegistry(entity);
-    const std::type_info& type = typeid(T);
+    auto signature = entityManager->GetSignature(entity);
+    std::type_index type(typeid(T));
     signature.set(componentManager->GetComponentType(type), true);
-    entityManager->SetRegistry(entity, signature);
+    entityManager->SetSignature(entity, signature);
 
     systemManager->EntitySignatureChanged(entity, signature);
 }
@@ -69,10 +74,10 @@ inline void Engine::RemoveComponent(Entity entity)
 {
     componentManager->RemoveComponent<T>(entity);
 
-    auto signature = entityManager->GetRegistry(entity);
-    const std::type_info& type = typeid(T);
+    auto signature = entityManager->GetSignature(entity);
+    std::type_index type(typeid(T));
     signature.set(componentManager->GetComponentType(type), false);
-    entityManager->SetRegistry(entity, signature);
+    entityManager->SetSignature(entity, signature);
 
     systemManager->EntitySignatureChanged(entity, signature);
 }

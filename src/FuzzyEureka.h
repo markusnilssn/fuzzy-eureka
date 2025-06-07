@@ -23,9 +23,8 @@ private:
     // sf::Time previousTime;
 
     // sf::Font font;
-
-    Entity monster;
-    AStarSystem* pathfinding;
+    Entity animal;
+    Entity building;
     std::shared_ptr<Grid> grid;
 
 };

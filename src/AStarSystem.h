@@ -7,16 +7,20 @@
 #include "Grid.h"
 
 // cloud be a local set 
-struct AStarComponent 
+struct NavigationComponent 
 {   
-    std::set<Node*> currentNodes;
-    std::set<Node*> lastNodes;
 
     Node* endNode;
 
     std::list<Node*> path;
 
     float moveTick;
+};
+
+struct ObjectComponent 
+{
+    std::set<Node*> currentNodes;
+    std::set<Node*> lastNodes;
 };
 
 class AStarSystem final : public System
@@ -45,7 +49,7 @@ private:
     Grid& grid;
     MessageQueue& messageQueue;
     
-    static constexpr float moveSpeed = 20.0f;
+    static constexpr float moveSpeed = 5.0f;
 
     const bool IsWalkable(Node* node, Entity entity, const sf::Vector2i& sizeInNodes);
     std::list<Node*> FindPath(Node* startNode, Node* endNode, Entity entity, const sf::Vector2i& sizeInNodes);

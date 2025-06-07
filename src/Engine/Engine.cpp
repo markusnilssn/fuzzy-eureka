@@ -5,14 +5,19 @@ Engine::Engine()
     , systemManager(nullptr)
     , entityManager(nullptr)
 {
-
+    componentManager = std::make_unique<ComponentManager>();
+    systemManager = std::make_unique<SystemManager>();
+    entityManager = std::make_unique<EntityManager>();
 }
 
 void Engine::Start() 
 {
-    componentManager = std::make_unique<ComponentManager>();
-    systemManager = std::make_unique<SystemManager>();
-    entityManager = std::make_unique<EntityManager>();
+    systemManager->Start();
+}
+
+void Engine::Destroy() 
+{
+    systemManager->Destroy();
 }
 
 void Engine::Update(const float deltaTime) 
@@ -23,11 +28,6 @@ void Engine::Update(const float deltaTime)
 void Engine::Render(sf::RenderWindow& window) 
 {
     systemManager->Render(window);
-}
-
-void Engine::Destroy() 
-{
-
 }
 
 Entity Engine::CreateEntity() 
@@ -42,12 +42,17 @@ void Engine::DestroyEntity(Entity entity)
     systemManager->EntityDestroyed(entity);
 }
 
-ComponentType Engine::GetComponentType(const std::type_info& type)
+ComponentType Engine::GetComponentType(std::type_index type)
 {
     return componentManager->GetComponentType(type);
 }
 
-void Engine::SetSystemRegistry(const std::type_info &type, Registry signature)
+Signature Engine::GetEntitySignature(Entity entity)
 {
-    systemManager->SetRegistry(type, signature);
+    return entityManager->GetSignature(entity);
+}
+
+void Engine::SetSystemSignature(std::type_index type, Signature signature)
+{
+    systemManager->SetSignature(type, signature);
 }

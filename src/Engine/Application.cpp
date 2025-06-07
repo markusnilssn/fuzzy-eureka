@@ -28,8 +28,8 @@ void Application::Run(const Settings& settings)
     window->setVerticalSyncEnabled(settings.vsync); // Enable VSync
     window->setFramerateLimit(settings.framelimit);
 
-    engine.Start();
     Start();
+    engine.Start();
 
     while (window->isOpen())
     {   

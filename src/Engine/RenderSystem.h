@@ -12,6 +12,7 @@ public:
     void Start() override;
     void Destroy() override;
 
+    void Update(const float deltaTime) override;
     void Render(sf::RenderWindow& window) override;
 
 private:

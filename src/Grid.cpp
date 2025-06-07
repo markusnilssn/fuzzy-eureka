@@ -23,26 +23,12 @@ Grid::Grid(const int width, const int height, const sf::Vector2i& nodeSize)
             node.owner = InvalidEntity;
         }
     }
-
-    // for (int x = 0; x < width; ++x) 
-    // {
-    //     for (int y = 0; y < height; y++)
-    //     {
-    //         std::cout << nodes[x][y].X() << " " << nodes[x][y].Y() << std::endl;
-    //     }
-    // }
 }
 
 std::set<Node*> Grid::NodesUnderRectangle(const sf::FloatRect& rectangle)
 {
     Node* topLeft = NodeFromWorldPosition(rectangle.position);
     Node* bottomRight = NodeFromWorldPosition(rectangle.position + sf::Vector2f(rectangle.size.x - nodeSize.x, rectangle.size.y - nodeSize.y)); // offset 
-
-    // std::cout << rectangle.position.x << " " << rectangle.position.y << std::endl;
-    // std::cout << rectangle.size.x << " " << rectangle.size.y << std::endl;
-
-    // std::cout << topLeft->x << " " << topLeft->y << std::endl;
-    // std::cout << bottomRight->x << " " << bottomRight->y << std::endl;
 
     std::set<Node*> returnValue;
 
@@ -55,10 +41,8 @@ std::set<Node*> Grid::NodesUnderRectangle(const sf::FloatRect& rectangle)
     {
         for (int y = yTop; y <= yBottom; ++y)
         {
-            // std::cout << x << " " << y << std::endl;
             if (x < 0 || x >= width || y < 0 || y >= height)
             {
-                // std::cout << "Skipping" << std::endl;
                 continue;
             }
 
@@ -66,7 +50,6 @@ std::set<Node*> Grid::NodesUnderRectangle(const sf::FloatRect& rectangle)
         }
     }
 
-    // std::cout << "return " << returnValue.size() << std::endl;
     return returnValue;
 }
 

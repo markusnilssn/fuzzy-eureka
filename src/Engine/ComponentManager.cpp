@@ -1,4 +1,5 @@
 #include "ComponentManager.h"
+#include <typeindex>
 
 ComponentManager::ComponentManager()
     : componentTypes(),
@@ -16,7 +17,7 @@ void ComponentManager::EntityDestroyed(Entity entity)
     }
 }
 
-ComponentType ComponentManager::GetComponentType(const std::type_info& type)
+ComponentType ComponentManager::GetComponentType(std::type_index type)
 {
 	const char* typeName = type.name();
 

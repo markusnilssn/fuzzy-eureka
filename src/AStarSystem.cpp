@@ -13,14 +13,16 @@ AStarSystem::AStarSystem(Engine& engine, MessageQueue& messageQueue, Grid& grid)
     , grid(grid)
 {
     RequireComponent<TransformComponent>();
-    RequireComponent<AStarComponent>();
+    RequireComponent<ObjectComponent>();
+    RequireComponent<NavigationComponent>();
 }
 
 void AStarSystem::Start()
 {
     messageQueue.Subscribe<MoveEntity>([this](const MoveEntity& data)
     {
-        auto& navigation = engine.GetComponent<AStarComponent>(data.entity);
+        // redo with improved interface 
+        auto& navigation = engine.GetComponent<NavigationComponent>(data.entity);
         auto& transform = engine.GetComponent<TransformComponent>(data.entity);
 
         Node* mainNode = grid.NodeFromWorldPosition(transform.position);
@@ -29,7 +31,7 @@ void AStarSystem::Start()
         int ySize = transform.size.y / grid.GetNodeSize().y;
 
         navigation.path = FindPath(mainNode, data.node, data.entity, sf::Vector2i{xSize, ySize});   
-        std::cout << navigation.path.size() << std::endl;
+
         std::cout << "x: " << data.node->X() << " y: " << data.node->Y() << " Entity " << data.entity << std::endl;
     });
 }
@@ -41,10 +43,10 @@ void AStarSystem::Destroy()
 
 void AStarSystem::Update(float deltaTime) 
 {
-     for (auto& entity : entities)
+    for (auto& [entity, registry] : EntitiesWith<TransformComponent, ObjectComponent>())
     {
-        auto& transform  = engine.GetComponent<TransformComponent>(entity);
-        auto& navigation = engine.GetComponent<AStarComponent>(entity);
+        auto& transform  = std::get<0>(registry);
+        auto& object = std::get<1>(registry);
 
         sf::FloatRect rect{ transform.position, transform.size };
 
@@ -55,7 +57,7 @@ void AStarSystem::Update(float deltaTime)
             for (Node* n : currentNodes)
                 grid.Lock(n, entity);
 
-            for (Node* old : navigation.lastNodes)
+            for (Node* old : object.lastNodes)
             {
                 if (old != nullptr && currentNodes.find(old) == currentNodes.end())
                 {
@@ -64,22 +66,38 @@ void AStarSystem::Update(float deltaTime)
             }
         }
 
-        navigation.lastNodes = std::move(currentNodes);
+        object.lastNodes = std::move(currentNodes);
+    }
+
+
+    for (auto& [entity, registry] : EntitiesWith<TransformComponent, NavigationComponent>())
+    {
+        auto& transform  = std::get<0>(registry);
+        auto& navigation = std::get<1>(registry);
+
 
         if (!navigation.path.empty())
         {
             Node* nodeToGoTo = navigation.path.front();
             sf::Vector2f destination = grid.WorldPositionFromNode(nodeToGoTo);
 
-            if (transform.position != destination && navigation.moveTick > 0.3f)
+            sf::Vector2f difference = (destination - transform.position);
+            sf::Vector2f toMove = difference.normalized();
+            transform.position += toMove * moveSpeed * deltaTime;
+            if(difference.lengthSquared() < 0.1f)
             {
                 transform.position = destination;
-                navigation.moveTick = 0.0f;
                 navigation.path.pop_front();
             }
-        }
 
-        navigation.moveTick += deltaTime;
+            // navigation.moveTick += deltaTime;
+            // if (transform.position != destination && navigation.moveTick > 0.3f)
+            // {
+            //     transform.position = destination;
+            //     navigation.path.pop_front();
+            //     navigation.moveTick = 0.0f;
+            // }
+        }
     }
 }
 

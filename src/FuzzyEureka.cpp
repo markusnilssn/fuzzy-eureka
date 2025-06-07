@@ -53,7 +53,9 @@ void FuzzyEureka::Start()
 {
     engine.RegisterComponent<TransformComponent>(); 
     engine.RegisterComponent<SpriteComponent>();
-    engine.RegisterComponent<AStarComponent>();
+    engine.RegisterComponent<NavigationComponent>();
+    engine.RegisterComponent<ObjectComponent>();
+    engine.RegisterComponent<AnimatorComponent>();
     
     engine.RegisterSystem<RenderSystem>();
 
@@ -62,23 +64,46 @@ void FuzzyEureka::Start()
     sf::Vector2i nodeSize{16, 16};
     grid = std::make_shared<Grid>(width, height, nodeSize);
 
-
-    pathfinding = engine.RegisterSystem<AStarSystem>(messageQueue, *(grid.get())).get();
+    engine.RegisterSystem<AStarSystem>(messageQueue, *(grid.get())).get();
 
     std::vector<Entity> entities;
 
-    monster = engine.CreateEntity();
-    engine.AddComponent(monster, TransformComponent{
-        .position = sf::Vector2f(0,0),
-        .size = sf::Vector2f(32, 32),
-        .angle = sf::degrees(0),
-    });
-    // "resources/Characters/Monsters/Slimes/KingSlimeBlue.png",  false, sf::IntRect({0,0}, {16, 16}
-    engine.AddComponent(monster, SpriteComponent{
-        .texture = sf::Texture("resources/Buildings/Wood/Keep.png", false, sf::IntRect({0,0}, {32, 32})),
-        .sortLayer = 1
-    });
-    engine.AddComponent(monster, AStarComponent{});
+    {
+        building = engine.CreateEntity();
+        engine.AddComponent(building, TransformComponent{
+            .position = sf::Vector2f(nodeSize.x * 5, nodeSize.y * 5),
+            .size = sf::Vector2f(32, 32),
+            .angle = sf::degrees(0),
+        });
+        engine.AddComponent(building, SpriteComponent{
+            .texture = sf::Texture("resources/Buildings/Wood/Keep.png", false, sf::IntRect({0,0}, {32, 32})),
+            .sortLayer = 1
+        });
+    }
+    {
+        animal = engine.CreateEntity();
+        engine.AddComponent(animal, TransformComponent{
+            .position = sf::Vector2f(0,0),
+            .size = sf::Vector2f(nodeSize.x, nodeSize.y),
+            .angle = sf::degrees(0),
+        });
+
+        SpriteSheet boar;
+        boar.LoadTexture("resources/Animals/Boar.png", sf::Vector2i(16, 16));
+        boar.Cut(Animation::Walk::Down, sf::Vector2i(0,0), sf::Vector2i(3,0));
+        boar.Cut(Animation::Walk::Up, sf::Vector2i(0,1), sf::Vector2i(3,1));
+        boar.Cut(Animation::Walk::Right, sf::Vector2i(0,2), sf::Vector2i(3,2));
+        boar.Cut(Animation::Walk::Left, sf::Vector2i(0,3), sf::Vector2i(3,3));
+        
+        engine.AddComponent(animal, AnimatorComponent{
+            .animation = Animation::Walk::Down,
+            .spriteSheet = boar,
+            .loop = true,
+            // .speedInSeconds = 0.4f,
+        });
+        engine.AddComponent(animal, NavigationComponent{});
+        engine.AddComponent(animal, ObjectComponent{});
+    }
 
     auto windowSize = GetWindowSize();
 
@@ -114,7 +139,7 @@ void FuzzyEureka::Update(const float deltaTime)
 
         Node* node = grid->NodeFromWorldPosition({(float)position.x, (float)position.y});
        
-        messageQueue.Send<MoveEntity>(node, monster);
+        messageQueue.Send<MoveEntity>(node, animal);
     }
     if(mouse.IsMouseButtonPressed(sf::Mouse::Button::Right))
     {

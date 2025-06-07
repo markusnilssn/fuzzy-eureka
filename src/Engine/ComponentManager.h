@@ -6,7 +6,7 @@
 
 #include <unordered_map>
 #include <memory>
-
+#include <typeindex>
 
 class ComponentManager {
 public:
@@ -15,7 +15,7 @@ public:
 	template<typename T>
 	void RegisterComponent();
 
-    [[nodiscard]] ComponentType GetComponentType(const std::type_info& type);
+    [[nodiscard]] ComponentType GetComponentType(std::type_index type);
 
     template<typename T>
     void AddComponent(Entity entity, T component);
