@@ -17,9 +17,11 @@ public:
 
     Node* NearestNode(Node* node); // Nearest to target that's not blocked
     std::list<Node*> NodesInRange(Node* node, float range); // Nodes within a range
+    // std::list<Node*> FindAllNeighbors(Node* node); // Neighbors of a node
     std::list<Node*> FindNeighbors(Node* node); // Neighbors of a node
 
     Node* NodeFromWorldPosition(const sf::Vector2f& worldPosition); 
+    Node* NodeFromAbsolutePosition(const sf::Vector2f& absolutePosition);
     const sf::Vector2f WorldPositionFromNode(Node* node);
 
     void Lock(Node* nodes, Entity entity = InvalidEntity);

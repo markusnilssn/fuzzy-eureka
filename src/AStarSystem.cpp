@@ -48,9 +48,14 @@ void AStarSystem::Update(float deltaTime)
         auto& transform  = std::get<0>(registry);
         auto& object = std::get<1>(registry);
 
-        sf::FloatRect rect{ transform.position, transform.size };
+        // sf::Vector2f center{ transform.position.y + grid.GetNodeSize().x, transform.position.y + grid.GetNodeSize().y };
+        // sf::Vector2f offset{ transform.size.x - grid.GetNodeSize().x, transform.size.y - grid.GetNodeSize().y };
 
-        std::set<Node*> currentNodes = grid.NodesUnderRectangle(rect);
+        object.bounds = sf::FloatRect{ transform.position, transform.size};
+
+        // object.center = sf::Vector2f(transform.position.x, transform.position.y);
+
+        std::set<Node*> currentNodes = grid.NodesUnderRectangle(object.bounds);
 
         if (!currentNodes.empty())
         {
@@ -69,7 +74,6 @@ void AStarSystem::Update(float deltaTime)
         object.lastNodes = std::move(currentNodes);
     }
 
-
     for (auto& [entity, registry] : EntitiesWith<TransformComponent, NavigationComponent>())
     {
         auto& transform  = std::get<0>(registry);
@@ -83,6 +87,7 @@ void AStarSystem::Update(float deltaTime)
 
             sf::Vector2f difference = (destination - transform.position);
             sf::Vector2f toMove = difference.normalized();
+            constexpr float moveSpeed = 10.0f;
             transform.position += toMove * moveSpeed * deltaTime;
             if(difference.lengthSquared() < 0.1f)
             {
@@ -98,6 +103,18 @@ void AStarSystem::Update(float deltaTime)
             //     navigation.moveTick = 0.0f;
             // }
         }
+    }
+}
+
+void AStarSystem::Render(sf::RenderWindow& window) 
+{
+    for (auto& [entity, registry] : EntitiesWith<TransformComponent, ObjectComponent>())
+    {
+        auto& object = std::get<1>(registry);
+        sf::RectangleShape shape{object.bounds.size};
+        shape.setPosition(object.bounds.position);
+        shape.setOutlineThickness(1.0f);
+        window.draw(shape);        
     }
 }
 
@@ -250,3 +267,5 @@ int AStarSystem::GetDistanceBetweenNodes(Node *first, Node *second)
 
     return 14 * distX + 10 * (distY - distX);
 }
+
+

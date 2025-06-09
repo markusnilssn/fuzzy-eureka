@@ -89,7 +89,7 @@ struct AnimatorComponent
     std::string animation;
     bool loop;
     size_t currentFrame = 0;
-    float speed = 0.3f;
+    float speed = 1.0f;
     float tick = 0;
     // Time time;
     bool animating = false;

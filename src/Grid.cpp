@@ -21,6 +21,8 @@ Grid::Grid(const int width, const int height, const sf::Vector2i& nodeSize)
             node.y = y;
             node.blocked = false;
             node.owner = InvalidEntity;
+            node.worldPosition = sf::Vector2f(x * nodeSize.x, y * nodeSize.y);
+            // node.centerPosition = sf::Vector2f(worldPosition.x + nodeSize.x, worldPosition.y + nodeSize.y);
         }
     }
 }
@@ -142,23 +144,21 @@ std::list<Node*> Grid::FindNeighbors(Node* node)
     {
         for (int y = -1; y <= 1; ++y)
         {
-            // if ((x == 0 && y == -1)
-            // || (x == -1 && y == 0)
-            // || (x == 1 && y == 0)
-            // || (x == 0 && y == 1))
-            // {
-            //     continue;
-            // }
-
-            int nodeX = node->x + x;
-            int nodeY = node->y + y;
-
-            if (nodeX < 0 || nodeX >= width || nodeY < 0 || nodeY >= height)
-            {
-                continue;
+            if ((x == 0 && y == -1)
+                || (x == -1 && y == 0)
+                || (x == 1 && y == 0)
+                || (x == 0 && y == 1))
+            {   
+                int nodeX = node->x + x;
+                int nodeY = node->y + y;
+                
+                if (nodeX < 0 || nodeX >= width || nodeY < 0 || nodeY >= height)
+                {
+                    continue;
+                }
+                
+                returnValue.push_back(&nodes[nodeX][nodeY]);
             }
-
-            returnValue.push_back(&nodes[nodeX][nodeY]);
         }
     }
 
@@ -167,8 +167,24 @@ std::list<Node*> Grid::FindNeighbors(Node* node)
 
 Node* Grid::NodeFromWorldPosition(const sf::Vector2f &worldPosition)
 {
-    int x = static_cast<int>(worldPosition.x / nodeSize.x);
-    int y = static_cast<int>(worldPosition.y / nodeSize.y);
+    float xOffset = nodeSize.x / 2.0f;
+    float yOffset = nodeSize.y / 2.0f;
+
+    int x = static_cast<int>((worldPosition.x + xOffset) / nodeSize.x);
+    int y = static_cast<int>((worldPosition.y + yOffset) / nodeSize.y);
+
+    if (x < 0 || x >= width || y < 0 || y >= height)
+    {
+        return nullptr;
+    }
+
+    return &nodes[x][y];
+}
+
+Node *Grid::NodeFromAbsolutePosition(const sf::Vector2f &absolutePosition)
+{
+    int x = static_cast<int>(absolutePosition.x / nodeSize.x);
+    int y = static_cast<int>(absolutePosition.y / nodeSize.y);
 
     if (x < 0 || x >= width || y < 0 || y >= height)
     {
@@ -180,9 +196,12 @@ Node* Grid::NodeFromWorldPosition(const sf::Vector2f &worldPosition)
 
 const sf::Vector2f Grid::WorldPositionFromNode(Node* node)
 {
-    return sf::Vector2f(node->x * nodeSize.x, node->y * nodeSize.y);
-}
+    float xOffset = 0.0f; // nodeSize.x / 2.0f;
+    float yOffset = 0.0f; // nodeSize.y / 2.0f;
 
+
+    return sf::Vector2f((node->x * nodeSize.x) - xOffset, (node->y * nodeSize.y) - yOffset);
+}
 
 void Grid::Lock(Node* node, Entity entity)
 {
@@ -255,6 +274,9 @@ void Grid::Render(sf::RenderWindow &window)
             {
                 rectangle.setFillColor(sf::Color::Green);
             }
+
+            rectangle.setOutlineColor(sf::Color::Black);
+            rectangle.setOutlineThickness(1.0f);
 
             window.draw(rectangle);
         }

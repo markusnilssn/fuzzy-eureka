@@ -81,7 +81,6 @@ void RenderSystem::Render(sf::RenderWindow& window)
         sprite.setTextureRect(sequences[animator.currentFrame]);
     
         window.draw(sprite);
-        
     }
 
     for(auto& [layer, drawables] : collection)

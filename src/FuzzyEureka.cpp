@@ -67,7 +67,6 @@ void FuzzyEureka::Start()
     engine.RegisterSystem<AStarSystem>(messageQueue, *(grid.get())).get();
 
     std::vector<Entity> entities;
-
     {
         building = engine.CreateEntity();
         engine.AddComponent(building, TransformComponent{
@@ -79,6 +78,9 @@ void FuzzyEureka::Start()
             .texture = sf::Texture("resources/Buildings/Wood/Keep.png", false, sf::IntRect({0,0}, {32, 32})),
             .sortLayer = 1
         });
+        
+        engine.AddComponent(building, NavigationComponent{});
+        engine.AddComponent(building, ObjectComponent{});
     }
     {
         animal = engine.CreateEntity();
@@ -136,15 +138,22 @@ void FuzzyEureka::Update(const float deltaTime)
     if(mouse.IsMouseButtonPressed(sf::Mouse::Button::Left))
     {
         const auto& position = mouse.GetMousePosition(GetWindow());
+        std::cout << position.x << " " << position.y << std::endl;
 
-        Node* node = grid->NodeFromWorldPosition({(float)position.x, (float)position.y});
+        float xOffset = grid->GetNodeSize().x / 2.0f;
+        float yOffset = grid->GetNodeSize().y / 2.0f;
+    
+        std::cout << "Offset " << static_cast<int>((position.x + xOffset) / grid->GetNodeSize().x) << " " << static_cast<int>((position.y + yOffset) / grid->GetNodeSize().y) << std::endl;
+        std::cout << "Real" << static_cast<int>((position.x) / grid->GetNodeSize().x) << " " << static_cast<int>((position.y) / grid->GetNodeSize().y) << std::endl;
+
+        Node* node = grid->NodeFromAbsolutePosition({(float)position.x, (float)position.y});
        
         messageQueue.Send<MoveEntity>(node, animal);
     }
     if(mouse.IsMouseButtonPressed(sf::Mouse::Button::Right))
     {
         const auto& position = mouse.GetMousePosition(GetWindow());
-        Node* node = grid->NodeFromWorldPosition({(float)position.x, (float)position.y});
+        Node* node = grid->NodeFromAbsolutePosition({(float)position.x, (float)position.y});
         if(!node->IsLocked())
             grid->Lock(node);
         else

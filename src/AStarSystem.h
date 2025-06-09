@@ -3,13 +3,15 @@
 #include <list>
 #include <queue>
 
+#include <SFML/Graphics.hpp>
+#include <SFML/System.hpp>
+
 #include "Engine/MessageQueue.h"
 #include "Grid.h"
 
 // cloud be a local set 
 struct NavigationComponent 
 {   
-
     Node* endNode;
 
     std::list<Node*> path;
@@ -21,6 +23,9 @@ struct ObjectComponent
 {
     std::set<Node*> currentNodes;
     std::set<Node*> lastNodes;
+
+    // sf::Vector2f center;
+    sf::FloatRect bounds;
 };
 
 class AStarSystem final : public System
@@ -42,6 +47,7 @@ public:
     void Destroy() override;
 
     void Update(float deltaTime) override;
+    void Render(sf::RenderWindow& window) override;
 
 private:
     friend class FuzzyEureka;
@@ -49,8 +55,6 @@ private:
     Grid& grid;
     MessageQueue& messageQueue;
     
-    static constexpr float moveSpeed = 5.0f;
-
     const bool IsWalkable(Node* node, Entity entity, const sf::Vector2i& sizeInNodes);
     std::list<Node*> FindPath(Node* startNode, Node* endNode, Entity entity, const sf::Vector2i& sizeInNodes);
     Node* FindNodeWithLowestFCost(const std::list<Node *>& nodes, std::unordered_map<Node*, Weight>& costs);
