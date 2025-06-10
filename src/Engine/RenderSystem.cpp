@@ -7,8 +7,9 @@
 #include <math.h>
 #include "stl.h"
 
-RenderSystem::RenderSystem(Engine& engine)
+RenderSystem::RenderSystem(Engine& engine, const sf::Vector2i& nodeSize)
     : System(engine)
+    , nodeSize(nodeSize)
 {
     RequireComponent<TransformComponent>();
     RequireComponent<SpriteComponent>();
@@ -55,13 +56,24 @@ void RenderSystem::Update(const float deltaTime)
 
 void RenderSystem::Render(sf::RenderWindow& window)
 {
+    const sf::View& view = window.getView();
+    sf::Vector2f offset(nodeSize.x, nodeSize.y);
+    sf::Vector2f size = view.getSize() + offset;
+    sf::Vector2f center = (view.getCenter() - size / 2.0f) - offset;
+    sf::FloatRect viewport(center, size);
+
     // don't know if map order itself?
     std::map<uint_fast16_t, std::vector<sf::Sprite>> collection{};
     for(auto& [entity, registry] : EntitiesWith<TransformComponent, SpriteComponent>())
     {
         auto& transform = std::get<0>(registry);
         auto& sprite = std::get<1>(registry);
-        
+
+        if(!viewport.contains(transform.position))
+        {
+            continue;
+        }
+
         sf::Sprite drawable(sprite.texture);
         drawable.setPosition(transform.position);
         drawable.setColor(sprite.color);
@@ -73,6 +85,11 @@ void RenderSystem::Render(sf::RenderWindow& window)
     {
         auto& transform = std::get<0>(registry);
         auto& animator = std::get<1>(registry);
+        
+        if(!viewport.contains(transform.position))
+        {
+            continue;
+        }
 
         sf::Sprite sprite(animator.spriteSheet.texture);
         sprite.setPosition(transform.position);

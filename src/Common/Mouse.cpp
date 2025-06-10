@@ -61,14 +61,21 @@ const sf::Vector2f Mouse::GetMousePosition(const sf::RenderWindow& window)
 {
     sf::Vector2i raw = sf::Mouse::getPosition(window);
 
-    sf::Vector2u windowSize   = window.getSize();          
-    sf::Vector2f viewSize  = window.getView().getSize(); 
+    // sf::Vector2u windowSize   = window.getSize();          
+    // sf::Vector2f viewSize  = window.getView().getSize(); 
 
-    float scaleX = viewSize.x / static_cast<float>(windowSize.x);
-    float scaleY = viewSize.y / static_cast<float>(windowSize.y);
+    // float scaleX = viewSize.x / static_cast<float>(windowSize.x);
+    // float scaleY = viewSize.y / static_cast<float>(windowSize.y);
 
-    sf::Vector2f corrected { raw.x * scaleX, raw.y * scaleY };
-    return corrected;
+            const sf::Vector2f worldPosition = window.mapPixelToCoords(
+            sf::Vector2i(static_cast<int>(raw.x), static_cast<int>(raw.y)),
+            window.getView()
+        );
+        return worldPosition;
+
+
+    // sf::Vector2f corrected { raw.x * scaleX, raw.y * scaleY };
+    // return corrected;
 }
 
 void Mouse::RegisterMouseButton(sf::Mouse::Button button)

@@ -27,6 +27,15 @@ Grid::Grid(const int width, const int height, const sf::Vector2i& nodeSize)
     }
 }
 
+Grid::~Grid()
+{
+    for(int i = 0; i < height; i++) {
+        delete[] nodes[i];   
+    }
+
+    delete[] nodes;
+}
+
 std::set<Node*> Grid::NodesUnderRectangle(const sf::FloatRect& rectangle)
 {
     Node* topLeft = NodeFromWorldPosition(rectangle.position);
@@ -196,11 +205,7 @@ Node *Grid::NodeFromAbsolutePosition(const sf::Vector2f &absolutePosition)
 
 const sf::Vector2f Grid::WorldPositionFromNode(Node* node)
 {
-    float xOffset = 0.0f; // nodeSize.x / 2.0f;
-    float yOffset = 0.0f; // nodeSize.y / 2.0f;
-
-
-    return sf::Vector2f((node->x * nodeSize.x) - xOffset, (node->y * nodeSize.y) - yOffset);
+    return sf::Vector2f((node->x * nodeSize.x), (node->y * nodeSize.y));
 }
 
 void Grid::Lock(Node* node, Entity entity)
@@ -259,24 +264,36 @@ Node* Grid::GetNodeAt(const int x, const int y)
 
 void Grid::Render(sf::RenderWindow &window)
 {
+    const sf::View& view = window.getView();
+    sf::Vector2f offset(nodeSize.x, nodeSize.y);
+    sf::Vector2f size = view.getSize() + offset;
+    sf::Vector2f center = (view.getCenter() - size / 2.0f) - offset;
+    sf::FloatRect viewport(center, size);
+
     for (int x = 0; x < width; ++x)
     {
         for (int y = 0; y < height; ++y)
         {
-            sf::RectangleShape rectangle({(float)nodeSize.x, (float)nodeSize.y});
-            rectangle.setPosition(sf::Vector2f(x * nodeSize.x, y * nodeSize.y));
+            sf::Vector2f position(x * nodeSize.x, y * nodeSize.y);
+            if(!viewport.contains(position))
+                continue;
 
+
+            sf::RectangleShape rectangle({(float)nodeSize.x, (float)nodeSize.y});
+            rectangle.setPosition(position);
+
+            uint8_t alpha = 30;
             if (nodes[x][y].blocked)
             {
-                rectangle.setFillColor(sf::Color::Red);
+                rectangle.setFillColor(sf::Color(255, 0, 0, alpha));
             }
             else
             {
-                rectangle.setFillColor(sf::Color::Green);
+                rectangle.setFillColor(sf::Color(0, 255, 0, 0));
             }
 
             rectangle.setOutlineColor(sf::Color::Black);
-            rectangle.setOutlineThickness(1.0f);
+            rectangle.setOutlineThickness(0.5f);
 
             window.draw(rectangle);
         }

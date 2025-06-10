@@ -1,6 +1,9 @@
 cmake_minimum_required(VERSION 3.28)
 project(CMakeSFMLProject LANGUAGES CXX)
 
+set(CMAKE_BUILD_TYPE Debug)
+
+
 # Set the output directory for the executable
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 

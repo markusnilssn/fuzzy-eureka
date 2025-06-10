@@ -7,7 +7,7 @@ class Engine;
 class RenderSystem final : public System
 {
 public:
-    explicit RenderSystem(Engine& engine);
+    explicit RenderSystem(Engine& engine, const sf::Vector2i& nodeSize);
 
     void Start() override;
     void Destroy() override;
@@ -16,5 +16,6 @@ public:
     void Render(sf::RenderWindow& window) override;
 
 private:
+    sf::Vector2i nodeSize;
 
 };

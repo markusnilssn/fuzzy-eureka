@@ -12,76 +12,255 @@
 
 #include "Node.h"
 #include "GameMessages.h"
+#include "PearlyNoise.hpp"
+
+#include <optional>
+#include <set>
 
 FuzzyEureka::FuzzyEureka()
+    : cliffWater("resources/Ground/Cliff-Water.png", 16)
+    , cliff("resources/Ground/Cliff.png", 16)
+    , grass("resources/Ground/Grass.png", 16)
+    , shore("resources/Ground/Shore.png", 16)
+    , winter("resources/Ground/Winter.png", 16)
 {
     
 }
 
-void LoadFromPearlyNoise(const int width, const int height, const sf::Vector2i& nodeSize,  Engine& engine) 
+FuzzyEureka::~FuzzyEureka()
 {
-    // const siv::PerlinNoise::seed_type seed = 12345u;
-    // const siv::PerlinNoise perlin{ seed };
 
-    // int octaves = 8;
-    // double frequency = 8.0f;
+}
 
-    // for(int x = 0; x < width; ++x)
-    // {
-    //     for(int y = 0; y < height; ++y)
-    //     {
-    //         const double fx = (frequency / image.width());
-	// 	    const double fy = (frequency / image.height());
+void CombineTextures() {
 
-    //         const sf::Color color(perlin.octave2D_01((x * fx), (y * fy), octaves));
+}
+
+void FuzzyEureka::LoadFromPearlyNoise(const int width, const int height) 
+{
+    // static sf::Color lightblue(0,191,255);
+    // static sf::Color blue(65,105,225);
+    // static sf::Color green(34,139,34);
+    // static sf::Color darkgreen(0,100,0);
+    // static sf::Color sandy(210,180,140);
+    // static sf::Color beach (238, 214, 175);
+    // static sf::Color snow(255, 250, 250);
+    // static sf::Color mountain (139, 137, 137);
+
+    constexpr int tileSize = 16;
+
+    float threshold  = 0.0f;
+    float scale = 0.01f;
+
+    const siv::PerlinNoise::seed_type seed = 12345u;
+    const siv::PerlinNoise perlin{ seed };
 
 
+    auto isDeepWater = [](float noise) { return noise < 0.455; };
+    auto isNormalWater = [](float noise) { return noise < 0.465; };
+    auto isShallowWater = [](float noise) { return noise < 0.475; };
+    auto isShore = [](float noise) { return noise < 0.480; };
+    auto isSand = [](float noise) { return noise < 0.51; };
+    auto isShallowGrass = [](float noise) { return noise < 0.6; };
+    auto isDeepGrass = [](float noise) { return noise < 0.7; };
+    auto isMountain = [](float noise) { return noise >= 0.7f; };
 
-    //         Entity entity = engine.CreateEntity();
-    //         engine.AddComponent(entity, TransformComponent{
-    //             .position = sf::Vector2f(x * nodeSize.x, y * nodeSize.y),
-    //         });
-    //         engine.AddComponent(entity, SpriteComponent{
-    //             .texture = sf::Texture("resources/Ground/Grass.png"),
-    //             .color = color
-    //         })
-    //     }
-    // }
+    constexpr float Invalid = -1.0f;
+
+    auto isGrass = [&](float noise) -> bool
+    {
+        return isShallowGrass(noise) || isDeepGrass(noise);
+    };
+
+    auto isEdge = [&](float noise) -> bool {
+        return (isGrass(noise) && noise > Invalid); // Anything not mountain
+    };
+
+    auto isWater = [&](float noise) -> bool
+    {
+        return isShallowWater(noise) || isNormalWater(noise) || isDeepWater(noise);
+    };
+
+    // Generate
+    float** noises = new float*[width];
+    for(auto x = 0; x < width; x++)
+    {
+        noises[x] = new float[height];
+        for (auto y = 0; y < height; y++)
+        {
+            float xpos = x * 0.01f;
+            float ypos = y * 0.01f;
+            float octaves = 6;
+            float persistence = 0.5;
+            // float lacunarity = 2.0;
+
+            noises[x][y] = perlin.octave2D_01(xpos, ypos, octaves, persistence);
+        }
+    }
+
+    // Cleanup
+
+    auto Smooth = [=]()
+    {
+        for (int x = 0; x < width; ++x) 
+        {
+            for (int y = 0; y < height; y++)
+            {
+                // fix mountains  
+                if(isMountain(noises[x][y]))
+                {
+                    auto GetTile = [&](int dx, int dy) -> float {
+                        int nx = x + dx;
+                        int ny = y + dy;
+                        if (nx < 0 || nx >= width || ny < 0 || ny >= height) return Invalid;
+                        return noises[nx][ny];
+                    };
+
+                    auto up = GetTile(0, -1);
+                    auto down = GetTile(0, 1);
+                    auto left = GetTile(-1, 0);
+                    auto right = GetTile(1, 0);
+                    
+                    auto upLeft = GetTile(-1, -1);
+                    auto upRight = GetTile(1, -1);
+                    auto downLeft = GetTile(-1, 1);
+                    auto downRight = GetTile(1, 1);
+
+                    if(isEdge(up) && isEdge(down) && isEdge(left) && isEdge(right) && isEdge(upLeft) && isEdge(upRight) && isEdge(downLeft) && isEdge(downRight))  noises[x][y] = 0.6;
+                    
+                    if(isEdge(up) && isEdge(left) && isEdge(right) && !isEdge(down))  noises[x][y] = 0.6;
+                    if(isEdge(up) && isEdge(left) && !isEdge(right) && isEdge(down))  noises[x][y] = 0.6;
+                    if(isEdge(up) && !isEdge(left) && isEdge(right) && isEdge(down))  noises[x][y] = 0.6;
+                    if(!isEdge(up) && isEdge(left) && isEdge(right) && isEdge(down))  noises[x][y] = 0.6;
+                }
+            }
+        }
+    };
+
+    int amountToSmooth = 3;
+    for(int i = 0; i < amountToSmooth; i++)
+        Smooth();
+
+    
+    // Finalize
+    for (int x = 0; x < width; ++x) 
+    {
+        for (int y = 0; y < height; y++)
+        {
+            auto GetTile = [&](int dx, int dy) -> float {
+                int nx = x + dx;
+                int ny = y + dy;
+                if (nx < 0 || nx >= width || ny < 0 || ny >= height) return Invalid;
+                return noises[nx][ny];
+            };
+
+            auto up = GetTile(0, -1);
+            auto down = GetTile(0, 1);
+            auto left = GetTile(-1, 0);
+            auto right = GetTile(1, 0);
+            
+            auto upLeft = GetTile(-1, -1);
+            auto upRight = GetTile(1, -1);
+            auto downLeft = GetTile(-1, 1);
+            auto downRight = GetTile(1, 1);
+
+            auto isMountainEdge = [&](float noise)
+            {
+                auto occupy = [&](float noise)
+                {
+                    return isGrass(noise) && noise != Invalid;
+                };
+
+                return isMountain(noise) && (occupy(up) || occupy(down) || occupy(left) || occupy(right) || occupy(upLeft) || occupy(upRight) || occupy(downRight) || occupy(downLeft));
+            };
+
+            auto createEnvironment = [&](float noise) -> sf::Sprite
+            {
+                if (isDeepWater(noise)) return shore.CreateSprite(4, 0);
+                if (isNormalWater(noise)) return shore.CreateSprite(3, 0);
+                if (isShallowWater(noise)) return shore.CreateSprite(2, 0);
+                if (isShore(noise)) return shore.CreateSprite(1, 0);
+                if (isSand(noise)) return shore.CreateSprite(0, 0);
+                if (isShallowGrass(noise)) return grass.CreateSprite(1, 0);
+                if (isDeepGrass(noise)) return grass.CreateSprite(2, 0);
+                else 
+                {
+                    auto background = grass.CreateSprite(2, 0);
+
+                    // Interface map (direction to sprite index)
+                    if (isEdge(up) && !isEdge(down) && !isEdge(left) && !isEdge(right)) return cliff.CreateSpriteWitBackground(1, 0, background); // top cliff
+                    if (isEdge(down) && !isEdge(up) && !isEdge(left) && !isEdge(right)) return cliff.CreateSpriteWitBackground(1, 2, background); // bottom cliff
+                    if (isEdge(left) && !isEdge(up) && !isEdge(down) && !isEdge(right)) return cliff.CreateSpriteWitBackground(0, 1, background); // left cliff
+                    if (isEdge(right) && !isEdge(up) && !isEdge(down) && !isEdge(left)) return cliff.CreateSpriteWitBackground(2, 1, background); // right cliff
+
+                    // Mixed edge cases (can customize)
+                    if (isEdge(up) && isEdge(left))        return cliff.CreateSpriteWitBackground(0, 0, background);//    
+                    if (isEdge(up) && isEdge(right))       return cliff.CreateSpriteWitBackground(2, 0, background);//    
+                    if (isEdge(down) && isEdge(left))      return cliff.CreateSpriteWitBackground(0, 2, background);//    
+                    if (isEdge(down) && isEdge(right))     return cliff.CreateSpriteWitBackground(2, 2, background);//    
+
+                    // Diagonal transitions
+                    if (isEdge(upLeft))               return cliff.CreateSpriteWitBackground(3, 2, background); // top-left edge
+                    if (isEdge(upRight))              return cliff.CreateSpriteWitBackground(4, 2, background); // top-right edge
+                    if (isEdge(downLeft))             return cliff.CreateSpriteWitBackground(3, 3, background); // bottom-left edge
+                    if (isEdge(downRight))            return cliff.CreateSpriteWitBackground(4, 3, background); // bottom-right edge
+
+                    return cliff.CreateSprite(1, 1); // Default mountain
+                }
+            };
+
+            auto noise = noises[x][y];
+
+            if(isWater(noise) || isMountainEdge(noise))
+                grid->Lock(grid->GetNodeAt(x, y));
+
+            auto sprite = createEnvironment(noise);
+            sprite.setPosition(sf::Vector2f(x*nodeSize.x, y *nodeSize.y));
+            world.emplace_back(std::move(sprite));
+        }
+    }
+
+    for(int i = 0; i < width; ++i) 
+        delete[] noises[i];   
+    delete[] noises;
 }
 
 void FuzzyEureka::Start()
 {
+    width = 256;
+    height = 256;
+    nodeSize = sf::Vector2i{16, 16};
+    
     engine.RegisterComponent<TransformComponent>(); 
     engine.RegisterComponent<SpriteComponent>();
     engine.RegisterComponent<NavigationComponent>();
     engine.RegisterComponent<ObjectComponent>();
     engine.RegisterComponent<AnimatorComponent>();
     
-    engine.RegisterSystem<RenderSystem>();
+    engine.RegisterSystem<RenderSystem>(nodeSize);
 
-    int width = 16;
-    int height = 16;
-    sf::Vector2i nodeSize{16, 16};
+
     grid = std::make_shared<Grid>(width, height, nodeSize);
+    LoadFromPearlyNoise(width, height);
 
     engine.RegisterSystem<AStarSystem>(messageQueue, *(grid.get())).get();
 
     std::vector<Entity> entities;
-    {
-        building = engine.CreateEntity();
-        engine.AddComponent(building, TransformComponent{
-            .position = sf::Vector2f(nodeSize.x * 5, nodeSize.y * 5),
-            .size = sf::Vector2f(32, 32),
-            .angle = sf::degrees(0),
-        });
-        engine.AddComponent(building, SpriteComponent{
-            .texture = sf::Texture("resources/Buildings/Wood/Keep.png", false, sf::IntRect({0,0}, {32, 32})),
-            .sortLayer = 1
-        });
+    // {
+    //     building = engine.CreateEntity();
+    //     engine.AddComponent(building, TransformComponent{
+    //         .position = sf::Vector2f(nodeSize.x * 5, nodeSize.y * 5),
+    //         .size = sf::Vector2f(32, 32),
+    //         .angle = sf::degrees(0),
+    //     });
+    //     engine.AddComponent(building, SpriteComponent{
+    //         .texture = sf::Texture("resources/Buildings/Wood/Keep.png", false, sf::IntRect({0,0}, {32, 32})),
+    //         .sortLayer = 1
+    //     });
         
-        engine.AddComponent(building, NavigationComponent{});
-        engine.AddComponent(building, ObjectComponent{});
-    }
+    //     engine.AddComponent(building, NavigationComponent{});
+    //     engine.AddComponent(building, ObjectComponent{});
+    // }
     {
         animal = engine.CreateEntity();
         engine.AddComponent(animal, TransformComponent{
@@ -129,7 +308,7 @@ void FuzzyEureka::Update(const float deltaTime)
     if (horizontal != 0 || vertical != 0)
     {
         sf::Vector2f move(horizontal, vertical);
-        constexpr float speed = 100.0f;
+        constexpr float speed = 600.0f;
         move *= speed * deltaTime; // Adjust speed as needed
         camera.move(move);
     }
@@ -138,13 +317,6 @@ void FuzzyEureka::Update(const float deltaTime)
     if(mouse.IsMouseButtonPressed(sf::Mouse::Button::Left))
     {
         const auto& position = mouse.GetMousePosition(GetWindow());
-        std::cout << position.x << " " << position.y << std::endl;
-
-        float xOffset = grid->GetNodeSize().x / 2.0f;
-        float yOffset = grid->GetNodeSize().y / 2.0f;
-    
-        std::cout << "Offset " << static_cast<int>((position.x + xOffset) / grid->GetNodeSize().x) << " " << static_cast<int>((position.y + yOffset) / grid->GetNodeSize().y) << std::endl;
-        std::cout << "Real" << static_cast<int>((position.x) / grid->GetNodeSize().x) << " " << static_cast<int>((position.y) / grid->GetNodeSize().y) << std::endl;
 
         Node* node = grid->NodeFromAbsolutePosition({(float)position.x, (float)position.y});
        
@@ -165,7 +337,32 @@ void FuzzyEureka::Update(const float deltaTime)
 void FuzzyEureka::Render(sf::RenderWindow& window)
 {
     window.setView(camera);
+
+
+    const sf::View& view = window.getView();
+    sf::Vector2f offset(nodeSize.x, nodeSize.y);
+    sf::Vector2f size = view.getSize() + offset;
+    sf::Vector2f center = (view.getCenter() - size / 2.0f) - offset;
+    sf::FloatRect viewport(center, size);
+
+    int length = width * height;
+    for (int index = 0; index < length; ++index) 
+    {
+        int x = index / height;
+        int y = index % height;
+
+        // sf::Vector2f position(x * nodeSize.x, y * nodeSize.y);
+        
+        if(!viewport.contains(world[index].getPosition()))
+        {
+            continue;
+        }
+
+        window.draw(world[index]);
+    }
+
     grid->Render(window);
+
 
 
     // currentTime = clock.getElapsedTime();
@@ -179,7 +376,15 @@ void FuzzyEureka::Render(sf::RenderWindow& window)
     // grid.Render(window);
 }
 
-void FuzzyEureka::HandleEvent(const sf::Event& event)
+void FuzzyEureka::HandleEvent(const std::optional<sf::Event>& event)
 {
- 
+    if (auto mouseWheelScrolled = event->getIf<sf::Event::MouseWheelScrolled>())
+    {
+        float zoomFactor = 1.1f;
+
+        if (mouseWheelScrolled->delta > 0.0f)
+            camera.zoom(1.0f / zoomFactor);
+        else if (mouseWheelScrolled->delta < 0.0f)
+            camera.zoom(zoomFactor);
+    }
 }

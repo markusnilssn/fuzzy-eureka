@@ -34,7 +34,7 @@ protected:
     virtual void Destroy() {}
     virtual void Update(const float deltaTime) {}
     virtual void Render(sf::RenderWindow& window) {}
-    virtual void HandleEvent(const sf::Event& event) {}
+    virtual void HandleEvent(const std::optional<sf::Event>& event) {}
 
     sf::RenderWindow& GetWindow();
     Input& GetInput();

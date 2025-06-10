@@ -11,6 +11,7 @@ class Grid
 {
 public:
     explicit Grid(const int width, const int height, const sf::Vector2i& nodeSize);
+    ~Grid();
 
     std::set<Node*> NodesUnderRectangle(const sf::FloatRect& rectangle); // Nodes within a rectangle
     std::set<Node*> NodesUnderCircle(const sf::CircleShape& circle); // Nodes within a circle

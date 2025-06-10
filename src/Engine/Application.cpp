@@ -80,6 +80,6 @@ void Application::HandleEvents(sf::RenderWindow &window)
         if(event->is<sf::Event::FocusGained>()) {}
         if(event->is<sf::Event::FocusLost>()) {}
         
-        // HandleEvent(event); // Error due to std::optional and raw sf::Event
+        HandleEvent(event); // Error due to std::optional and raw sf::Event
     }
 }
