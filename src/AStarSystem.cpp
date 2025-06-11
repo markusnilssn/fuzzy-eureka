@@ -69,7 +69,14 @@ void AStarSystem::Update(float deltaTime)
             auto& objectComponent = std::get<0>(registry);
             if(objectComponent.bounds.contains(position))
             {
-                selectedEntity = entity;
+                if(selectedEntity == entity)
+                {
+                    selectedEntity = InvalidEntity;
+                } 
+                else 
+                {
+                    selectedEntity = entity;
+                }
             }
         }
     }
