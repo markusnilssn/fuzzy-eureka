@@ -79,7 +79,7 @@ void AStarSystem::Update(float deltaTime)
 
         Node* node = grid.NodeFromAbsolutePosition({(float)position.x, (float)position.y});
         
-        if(node != nullptr)
+        if(node != nullptr && selectedEntity != InvalidEntity)
             messageQueue.Send<MoveEntity>(node, selectedEntity);
     }
 
@@ -143,24 +143,6 @@ void AStarSystem::Update(float deltaTime)
                 transform.position = destination;
                 navigation.path.pop_front();
             }
-
-
-            // sf::Vector2f toMove = difference.normalized();
-            // constexpr float moveSpeed = 100.0f;
-            // transform.position += toMove * moveSpeed * deltaTime;
-            // if(difference.lengthSquared() < 0.5f)
-            // {
-            //     transform.position = destination;
-            //     navigation.path.pop_front();
-            // }
-
-            // navigation.moveTick += deltaTime;
-            // if (transform.position != destination && navigation.moveTick > 0.3f)
-            // {
-            //     transform.position = destination;
-            //     navigation.path.pop_front();
-            //     navigation.moveTick = 0.0f;
-            // }
         }
     }
 }
