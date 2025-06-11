@@ -31,6 +31,28 @@ const bool Mouse::IsMouseButtonPressed(sf::Mouse::Button button)
     return iterator->second && !previousIterator->second;
 }
 
+const bool Mouse::IsMouseButtonReleased(sf::Mouse::Button button)
+{
+    if(!window.hasFocus())
+    {
+        return false;
+    }
+
+    auto iterator = mouseButtonStates.find(button);
+    if(iterator == mouseButtonStates.end())
+    {
+        return false;
+    }
+
+    auto previousIterator = previousMouseState.find(button);
+    if(previousIterator == mouseButtonStates.end())
+    {
+        return false;
+    }
+
+    return !iterator->second && previousIterator->second;
+}
+
 const bool Mouse::IsMouseButtonDown(sf::Mouse::Button button)
 {
     if(!window.hasFocus())

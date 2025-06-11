@@ -58,38 +58,48 @@ void AStarSystem::Destroy()
 
 void AStarSystem::Update(float deltaTime) 
 {
-
     auto& mouse = input.GetMouse();
     if(mouse.IsMouseButtonPressed(sf::Mouse::Button::Left))
     {
-        const auto& position = mouse.GetMousePosition(window);
+        startPosition = mouse.GetMousePosition(window);
+        selectedEntities.clear();
+        isSelecting = true;
+    }
 
-        for(auto& [entity, registry] : EntitiesWith<ObjectComponent>())
+    if(isSelecting)
+    {
+        sf::Vector2f endPosition = mouse.GetMousePosition(window);
+        sf::Vector2f size = endPosition - startPosition;
+        selectionBox = sf::FloatRect(startPosition, size);
+    }
+
+    if(mouse.IsMouseButtonReleased(sf::Mouse::Button::Left))
+    {
+        std::set<Node*> nodes = grid.NodesUnderRectangle(selectionBox);
+        for(auto node : nodes)
         {
-            auto& objectComponent = std::get<0>(registry);
-            if(objectComponent.bounds.contains(position))
+            if(node->Owner() != InvalidEntity)
             {
-                if(selectedEntity == entity)
-                {
-                    selectedEntity = InvalidEntity;
-                } 
-                else 
-                {
-                    selectedEntity = entity;
-                }
+                selectedEntities.insert(node->Owner());
             }
         }
+        isSelecting = false;
     }
+
     if(mouse.IsMouseButtonPressed(sf::Mouse::Button::Right))
     {
         const auto& position = mouse.GetMousePosition(window);
 
         Node* node = grid.NodeFromAbsolutePosition({(float)position.x, (float)position.y});
-        
-        if(node != nullptr && selectedEntity != InvalidEntity)
-            messageQueue.Send<MoveEntity>(node, selectedEntity);
-    }
 
+        for(auto& entity : selectedEntities)
+        {
+            if(node != nullptr && entity != InvalidEntity)
+                messageQueue.Send<MoveEntity>(node, entity);
+        }
+        
+
+    }
 
     for (auto& [entity, registry] : EntitiesWith<TransformComponent, ObjectComponent>())
     {
@@ -156,12 +166,20 @@ void AStarSystem::Update(float deltaTime)
 
 void AStarSystem::Render(sf::RenderWindow& window) 
 {
+    if(isSelecting)
+    {
+        sf::RectangleShape selection(selectionBox.size);
+        selection.setPosition(selectionBox.position);
+        selection.setFillColor(sf::Color(0, 0, 255, 50));
+        window.draw(selection);
+    }
+
     for (auto& [entity, registry] : EntitiesWith<TransformComponent, ObjectComponent>())
     {
         auto& object = std::get<1>(registry);
         sf::RectangleShape shape{object.bounds.size};
         shape.setPosition(object.bounds.position);
-        if(selectedEntity == entity)
+        if(selectedEntities.count(entity))
         {
             shape.setFillColor(sf::Color::Red);
         }

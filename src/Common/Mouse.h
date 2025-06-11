@@ -9,6 +9,7 @@ class Mouse final
     friend class Input;
 public:
     const bool IsMouseButtonPressed(sf::Mouse::Button button);
+    const bool IsMouseButtonReleased(sf::Mouse::Button button);
     const bool IsMouseButtonDown(sf::Mouse::Button button);
     const bool IsMouseButtonUp(sf::Mouse::Button button);
 

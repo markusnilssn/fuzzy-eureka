@@ -62,7 +62,10 @@ private:
     sf::RenderWindow& window;
     Input& input;
 
-    Entity selectedEntity = InvalidEntity;
+    std::unordered_set<Entity> selectedEntities;
+    sf::FloatRect selectionBox;
+    sf::Vector2f startPosition;
+    bool isSelecting = false;
     
     const bool IsWalkable(Node* node, Entity entity, const sf::Vector2i& sizeInNodes);
     std::list<Node*> FindPath(Node* startNode, Node* endNode, Entity entity, const sf::Vector2i& sizeInNodes);
