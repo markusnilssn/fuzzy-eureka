@@ -191,6 +191,7 @@ std::list<Node *> AStarSystem::FindPath(Node *startNode, Node *endNode, Entity e
         // Node* current = FindNodeWithLowestFCost(openList, weights);
         // openList.erase(current);
         // closedList.insert(current);
+        // GPT 
         Node* current = openQueue.top().first;
         openQueue.pop();
         openList.erase(current);
@@ -239,12 +240,13 @@ std::list<Node *> AStarSystem::FindPath(Node *startNode, Node *endNode, Entity e
             {
                 weight.gCost = tentativeG;
                 weight.parent = current;
-
+                
+                // GPT 
                 if (!openList.count(node)) {
                     openQueue.emplace(node, weight.fCost());
                     openList.insert(node);
                 }
-
+                
                 // bool containsInOpen = (std::find(openList.begin(), openList.end(), node) != openList.end());
                 // if (!containsInOpen)
                 //     openList.insert(node);

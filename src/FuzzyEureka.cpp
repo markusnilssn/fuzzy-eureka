@@ -188,18 +188,16 @@ void FuzzyEureka::LoadFromPearlyNoise(const int width, const int height)
                     auto background = grass.CreateSprite(2, 0);
 
                     // Interface map (direction to sprite index)
-                    if (isEdge(up) && !isEdge(down) && !isEdge(left) && !isEdge(right)) return cliff.CreateSpriteWitBackground(1, 0, background); // top cliff
-                    if (isEdge(down) && !isEdge(up) && !isEdge(left) && !isEdge(right)) return cliff.CreateSpriteWitBackground(1, 2, background); // bottom cliff
-                    if (isEdge(left) && !isEdge(up) && !isEdge(down) && !isEdge(right)) return cliff.CreateSpriteWitBackground(0, 1, background); // left cliff
-                    if (isEdge(right) && !isEdge(up) && !isEdge(down) && !isEdge(left)) return cliff.CreateSpriteWitBackground(2, 1, background); // right cliff
+                    if (isEdge(up) && !isEdge(down) && !isEdge(left) && !isEdge(right)) return cliff.CreateSpriteWitBackground(1, 0, background); // top
+                    if (isEdge(down) && !isEdge(up) && !isEdge(left) && !isEdge(right)) return cliff.CreateSpriteWitBackground(1, 2, background); // bottom
+                    if (isEdge(left) && !isEdge(up) && !isEdge(down) && !isEdge(right)) return cliff.CreateSpriteWitBackground(0, 1, background); // left
+                    if (isEdge(right) && !isEdge(up) && !isEdge(down) && !isEdge(left)) return cliff.CreateSpriteWitBackground(2, 1, background); // right
 
-                    // Mixed edge cases (can customize)
-                    if (isEdge(up) && isEdge(left))        return cliff.CreateSpriteWitBackground(0, 0, background);//    
-                    if (isEdge(up) && isEdge(right))       return cliff.CreateSpriteWitBackground(2, 0, background);//    
-                    if (isEdge(down) && isEdge(left))      return cliff.CreateSpriteWitBackground(0, 2, background);//    
-                    if (isEdge(down) && isEdge(right))     return cliff.CreateSpriteWitBackground(2, 2, background);//    
+                    if (isEdge(up) && isEdge(left))        return cliff.CreateSpriteWitBackground(0, 0, background);
+                    if (isEdge(up) && isEdge(right))       return cliff.CreateSpriteWitBackground(2, 0, background);
+                    if (isEdge(down) && isEdge(left))      return cliff.CreateSpriteWitBackground(0, 2, background);
+                    if (isEdge(down) && isEdge(right))     return cliff.CreateSpriteWitBackground(2, 2, background);
 
-                    // Diagonal transitions
                     if (isEdge(upLeft))               return cliff.CreateSpriteWitBackground(3, 2, background); // top-left edge
                     if (isEdge(upRight))              return cliff.CreateSpriteWitBackground(4, 2, background); // top-right edge
                     if (isEdge(downLeft))             return cliff.CreateSpriteWitBackground(3, 3, background); // bottom-left edge
