@@ -32,10 +32,6 @@ FuzzyEureka::~FuzzyEureka()
 
 }
 
-void CombineTextures() {
-
-}
-
 void FuzzyEureka::LoadFromPearlyNoise(const int width, const int height) 
 {
     // static sf::Color lightblue(0,191,255);
@@ -241,7 +237,7 @@ void FuzzyEureka::Start()
     grid = std::make_shared<Grid>(width, height, nodeSize);
     LoadFromPearlyNoise(width, height);
 
-    engine.RegisterSystem<AStarSystem>(messageQueue, *(grid.get())).get();
+    engine.RegisterSystem<AStarSystem>(messageQueue, *(grid.get()), GetConcurrency());
 
     std::vector<Entity> entities;
     // {

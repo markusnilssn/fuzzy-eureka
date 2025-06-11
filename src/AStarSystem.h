@@ -8,9 +8,11 @@
 
 #include <SFML/Graphics.hpp>
 #include <SFML/System.hpp>
+#include "Engine/Concurrency.h"
 
 #include "Engine/MessageQueue.h"
 #include "Grid.h"
+#include <mutex> 
 
 // cloud be a local set 
 struct NavigationComponent 
@@ -18,8 +20,6 @@ struct NavigationComponent
     Node* endNode;
 
     std::list<Node*> path;
-
-    float moveTick;
 };
 
 struct ObjectComponent 
@@ -44,7 +44,7 @@ class AStarSystem final : public System
     };
 
 public:
-    explicit AStarSystem(Engine& engine, MessageQueue& messageQueue, Grid& grid);
+    explicit AStarSystem(Engine& engine, MessageQueue& messageQueue, Grid& grid, Concurrency& concurrency);
 
     void Start() override;
     void Destroy() override;
@@ -57,6 +57,7 @@ private:
     
     Grid& grid;
     MessageQueue& messageQueue;
+    Concurrency& concurrency;
     
     const bool IsWalkable(Node* node, Entity entity, const sf::Vector2i& sizeInNodes);
     std::list<Node*> FindPath(Node* startNode, Node* endNode, Entity entity, const sf::Vector2i& sizeInNodes);

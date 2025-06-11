@@ -6,6 +6,7 @@
 // #include "imgui-SFML.h"
 
 Application::Application() 
+    : concurrency(std::make_unique<Concurrency>(std::thread::hardware_concurrency()))
 {
 
 }
@@ -66,6 +67,11 @@ sf::RenderWindow &Application::GetWindow()
 Input &Application::GetInput()
 {
     return *(input.get());
+}
+
+Concurrency &Application::GetConcurrency()
+{
+    return *(concurrency.get());
 }
 
 void Application::HandleEvents(sf::RenderWindow &window)

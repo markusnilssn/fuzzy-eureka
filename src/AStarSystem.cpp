@@ -13,10 +13,11 @@
 
 #include "GameMessages.h"
 
-AStarSystem::AStarSystem(Engine& engine, MessageQueue& messageQueue, Grid& grid)
+AStarSystem::AStarSystem(Engine& engine, MessageQueue& messageQueue, Grid& grid, Concurrency& concurrency)
     : System(engine)
     , messageQueue(messageQueue)
     , grid(grid)
+    , concurrency(concurrency)
 {
     RequireComponent<TransformComponent>();
     RequireComponent<ObjectComponent>();
@@ -28,15 +29,21 @@ void AStarSystem::Start()
     messageQueue.Subscribe<MoveEntity>([this](const MoveEntity& data)
     {
         // redo with improved interface 
+        // use concurrency for this!
+
         auto& navigation = engine.GetComponent<NavigationComponent>(data.entity);
         auto& transform = engine.GetComponent<TransformComponent>(data.entity);
-
+        
         Node* mainNode = grid.NodeFromWorldPosition(transform.position);
-
+        
         int xSize = transform.size.x / grid.GetNodeSize().x;
         int ySize = transform.size.y / grid.GetNodeSize().y;
-
-        navigation.path = FindPath(mainNode, data.node, data.entity, sf::Vector2i{xSize, ySize});   
+        
+        auto newPath = FindPath(mainNode, data.node, data.entity, sf::Vector2i{xSize, ySize});
+        if(newPath.size() > 0)
+        {
+            navigation.path = newPath;
+        }
 
         std::cout << "x: " << data.node->X() << " y: " << data.node->Y() << " Entity " << data.entity << std::endl;
     });
@@ -91,14 +98,33 @@ void AStarSystem::Update(float deltaTime)
             sf::Vector2f destination = grid.WorldPositionFromNode(nodeToGoTo);
 
             sf::Vector2f difference = (destination - transform.position);
-            sf::Vector2f toMove = difference.normalized();
-            constexpr float moveSpeed = 10.0f;
-            transform.position += toMove * moveSpeed * deltaTime;
-            if(difference.lengthSquared() < 0.1f)
+            float distance = difference.length(); 
+            
+            if(distance > 0.0f)
+            {
+                sf::Vector2f direction = difference / distance;
+
+                float moveSpeed = 100.0f;
+                float step = std::min(moveSpeed * deltaTime, distance);
+                sf::Vector2f toMove = direction * step;
+                transform.position += toMove;
+            }
+
+            if(distance <= 0.5f)
             {
                 transform.position = destination;
                 navigation.path.pop_front();
             }
+
+
+            // sf::Vector2f toMove = difference.normalized();
+            // constexpr float moveSpeed = 100.0f;
+            // transform.position += toMove * moveSpeed * deltaTime;
+            // if(difference.lengthSquared() < 0.5f)
+            // {
+            //     transform.position = destination;
+            //     navigation.path.pop_front();
+            // }
 
             // navigation.moveTick += deltaTime;
             // if (transform.position != destination && navigation.moveTick > 0.3f)
