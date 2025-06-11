@@ -75,7 +75,10 @@ void AStarSystem::Update(float deltaTime)
 
     if(mouse.IsMouseButtonReleased(sf::Mouse::Button::Left))
     {
+
         std::set<Node*> nodes = grid.NodesUnderRectangle(selectionBox);
+        isSelecting = false;
+
         for(auto node : nodes)
         {
             if(node->Owner() != InvalidEntity)
@@ -83,7 +86,6 @@ void AStarSystem::Update(float deltaTime)
                 selectedEntities.insert(node->Owner());
             }
         }
-        isSelecting = false;
     }
 
     if(mouse.IsMouseButtonPressed(sf::Mouse::Button::Right))
@@ -95,10 +97,10 @@ void AStarSystem::Update(float deltaTime)
         for(auto& entity : selectedEntities)
         {
             if(node != nullptr && entity != InvalidEntity)
+            {
                 messageQueue.Send<MoveEntity>(node, entity);
+            }
         }
-        
-
     }
 
     for (auto& [entity, registry] : EntitiesWith<TransformComponent, ObjectComponent>())
@@ -106,12 +108,7 @@ void AStarSystem::Update(float deltaTime)
         auto& transform  = std::get<0>(registry);
         auto& object = std::get<1>(registry);
 
-        // sf::Vector2f center{ transform.position.y + grid.GetNodeSize().x, transform.position.y + grid.GetNodeSize().y };
-        // sf::Vector2f offset{ transform.size.x - grid.GetNodeSize().x, transform.size.y - grid.GetNodeSize().y };
-
         object.bounds = sf::FloatRect{ transform.position, transform.size};
-
-        // object.center = sf::Vector2f(transform.position.x, transform.position.y);
 
         std::set<Node*> currentNodes = grid.NodesUnderRectangle(object.bounds);
 
@@ -179,9 +176,15 @@ void AStarSystem::Render(sf::RenderWindow& window)
         auto& object = std::get<1>(registry);
         sf::RectangleShape shape{object.bounds.size};
         shape.setPosition(object.bounds.position);
+
+        shape.setFillColor(sf::Color::Transparent);
         if(selectedEntities.count(entity))
         {
-            shape.setFillColor(sf::Color::Red);
+            shape.setOutlineColor(sf::Color::Red);
+        } 
+        else 
+        {
+            shape.setOutlineColor(sf::Color::White);
         }
         shape.setOutlineThickness(1.0f);
         window.draw(shape);        

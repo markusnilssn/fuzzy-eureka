@@ -41,6 +41,11 @@ std::set<Node*> Grid::NodesUnderRectangle(const sf::FloatRect& rectangle)
     Node* topLeft = NodeFromWorldPosition(rectangle.position);
     Node* bottomRight = NodeFromWorldPosition(rectangle.position + sf::Vector2f(rectangle.size.x - nodeSize.x, rectangle.size.y - nodeSize.y)); // offset 
 
+    if(topLeft == nullptr || bottomRight == nullptr)
+    {
+        return std::set<Node*>();
+    }
+
     std::set<Node*> returnValue;
 
     int xLeft = std::min(topLeft->x, bottomRight->x);
@@ -182,12 +187,16 @@ Node* Grid::NodeFromWorldPosition(const sf::Vector2f &worldPosition)
     int x = static_cast<int>((worldPosition.x + xOffset) / nodeSize.x);
     int y = static_cast<int>((worldPosition.y + yOffset) / nodeSize.y);
 
-    if (x < 0 || x >= width || y < 0 || y >= height)
-    {
-        return nullptr;
-    }
+    int xClamp = std::clamp(x, 0, width);
+    int yClamp = std::clamp(y, 0, height);
 
-    return &nodes[x][y];
+    // if (x < 0 || x >= width || y < 0 || y >= height)
+    // {
+    //     return nullptr;
+    // }
+
+    // return &nodes[x][y];
+    return &nodes[xClamp][yClamp];
 }
 
 Node *Grid::NodeFromAbsolutePosition(const sf::Vector2f &absolutePosition)
@@ -269,7 +278,7 @@ void Grid::Render(sf::RenderWindow &window)
             sf::RectangleShape rectangle({(float)nodeSize.x, (float)nodeSize.y});
             rectangle.setPosition(position);
 
-            uint8_t alpha = 30;
+            uint8_t alpha = 50;
             if (nodes[x][y].blocked)
             {
                 rectangle.setFillColor(sf::Color(255, 0, 0, alpha));
