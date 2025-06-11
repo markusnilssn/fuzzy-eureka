@@ -4,11 +4,12 @@
 #include <queue>
 #include <thread>
 #include <mutex> 
+#include <stdint.h>
 
 class Concurrency  
 {
 public:
-    explicit Concurrency(size_t amountOfThreads);
+    explicit Concurrency(uint32_t amountOfThreads);
     ~Concurrency();
 
     void Run(const std::function<void()>& job);

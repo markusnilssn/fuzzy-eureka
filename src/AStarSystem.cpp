@@ -13,11 +13,13 @@
 
 #include "GameMessages.h"
 
-AStarSystem::AStarSystem(Engine& engine, MessageQueue& messageQueue, Grid& grid, Concurrency& concurrency)
+AStarSystem::AStarSystem(Engine& engine, MessageQueue& messageQueue, Grid& grid, Concurrency& concurrency, Input& input, sf::RenderWindow& window)
     : System(engine)
     , messageQueue(messageQueue)
     , grid(grid)
     , concurrency(concurrency)
+    , input(input)
+    , window(window)
 {
     RequireComponent<TransformComponent>();
     RequireComponent<ObjectComponent>();
@@ -56,6 +58,32 @@ void AStarSystem::Destroy()
 
 void AStarSystem::Update(float deltaTime) 
 {
+
+    auto& mouse = input.GetMouse();
+    if(mouse.IsMouseButtonPressed(sf::Mouse::Button::Left))
+    {
+        const auto& position = mouse.GetMousePosition(window);
+
+        for(auto& [entity, registry] : EntitiesWith<ObjectComponent>())
+        {
+            auto& objectComponent = std::get<0>(registry);
+            if(objectComponent.bounds.contains(position))
+            {
+                selectedEntity = entity;
+            }
+        }
+    }
+    if(mouse.IsMouseButtonPressed(sf::Mouse::Button::Right))
+    {
+        const auto& position = mouse.GetMousePosition(window);
+
+        Node* node = grid.NodeFromAbsolutePosition({(float)position.x, (float)position.y});
+        
+        if(node != nullptr)
+            messageQueue.Send<MoveEntity>(node, selectedEntity);
+    }
+
+
     for (auto& [entity, registry] : EntitiesWith<TransformComponent, ObjectComponent>())
     {
         auto& transform  = std::get<0>(registry);
@@ -144,6 +172,10 @@ void AStarSystem::Render(sf::RenderWindow& window)
         auto& object = std::get<1>(registry);
         sf::RectangleShape shape{object.bounds.size};
         shape.setPosition(object.bounds.position);
+        if(selectedEntity == entity)
+        {
+            shape.setFillColor(sf::Color::Red);
+        }
         shape.setOutlineThickness(1.0f);
         window.draw(shape);        
     }

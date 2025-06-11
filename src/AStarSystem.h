@@ -13,6 +13,7 @@
 #include "Engine/MessageQueue.h"
 #include "Grid.h"
 #include <mutex> 
+#include "Common/Input.h"
 
 // cloud be a local set 
 struct NavigationComponent 
@@ -44,7 +45,7 @@ class AStarSystem final : public System
     };
 
 public:
-    explicit AStarSystem(Engine& engine, MessageQueue& messageQueue, Grid& grid, Concurrency& concurrency);
+    explicit AStarSystem(Engine& engine, MessageQueue& messageQueue, Grid& grid, Concurrency& concurrency, Input& input, sf::RenderWindow& window);
 
     void Start() override;
     void Destroy() override;
@@ -58,6 +59,10 @@ private:
     Grid& grid;
     MessageQueue& messageQueue;
     Concurrency& concurrency;
+    sf::RenderWindow& window;
+    Input& input;
+
+    Entity selectedEntity = InvalidEntity;
     
     const bool IsWalkable(Node* node, Entity entity, const sf::Vector2i& sizeInNodes);
     std::list<Node*> FindPath(Node* startNode, Node* endNode, Entity entity, const sf::Vector2i& sizeInNodes);

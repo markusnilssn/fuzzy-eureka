@@ -1,10 +1,10 @@
 #include "Concurrency.h"
 
-Concurrency::Concurrency(size_t amountOfThreads)
+Concurrency::Concurrency(uint32_t amountOfThreads)
     : isRunning(true)
 {
     threads.reserve(amountOfThreads);
-    for(size_t i = 0; i < amountOfThreads; i++)
+    for(uint32_t i = 0; i < amountOfThreads; i++)
     {
         threads.emplace_back(&Concurrency::Update, this);
     }

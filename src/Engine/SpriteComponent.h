@@ -101,3 +101,4 @@ struct SpriteComponent
     uint_fast16_t sortLayer;
     sf::Color color = sf::Color::White;
 };
+

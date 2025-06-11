@@ -79,10 +79,10 @@ void FuzzyEureka::LoadFromPearlyNoise(const int width, const int height)
 
     // Generate
     float** noises = new float*[width];
-    for(auto x = 0; x < width; x++)
+    for(int_fast32_t  x = 0; x < width; x++)
     {
         noises[x] = new float[height];
-        for (auto y = 0; y < height; y++)
+        for (int_fast32_t  y = 0; y < height; y++)
         {
             float xpos = x * 0.01f;
             float ypos = y * 0.01f;
@@ -133,8 +133,8 @@ void FuzzyEureka::LoadFromPearlyNoise(const int width, const int height)
         }
     };
 
-    int amountToSmooth = 3;
-    for(int i = 0; i < amountToSmooth; i++)
+    int_fast32_t  amountToSmooth = 3;
+    for(int_fast32_t  i = 0; i < amountToSmooth; i++)
         Smooth();
 
     
@@ -237,24 +237,24 @@ void FuzzyEureka::Start()
     grid = std::make_shared<Grid>(width, height, nodeSize);
     LoadFromPearlyNoise(width, height);
 
-    engine.RegisterSystem<AStarSystem>(messageQueue, *(grid.get()), GetConcurrency());
+    engine.RegisterSystem<AStarSystem>(messageQueue, *(grid.get()), GetConcurrency(), GetInput(), GetWindow());
 
     std::vector<Entity> entities;
-    // {
-    //     building = engine.CreateEntity();
-    //     engine.AddComponent(building, TransformComponent{
-    //         .position = sf::Vector2f(nodeSize.x * 5, nodeSize.y * 5),
-    //         .size = sf::Vector2f(32, 32),
-    //         .angle = sf::degrees(0),
-    //     });
-    //     engine.AddComponent(building, SpriteComponent{
-    //         .texture = sf::Texture("resources/Buildings/Wood/Keep.png", false, sf::IntRect({0,0}, {32, 32})),
-    //         .sortLayer = 1
-    //     });
+    {
+        building = engine.CreateEntity();
+        engine.AddComponent(building, TransformComponent{
+            .position = sf::Vector2f(nodeSize.x * 53, nodeSize.y * 18),
+            .size = sf::Vector2f(32, 32),
+            .angle = sf::degrees(0),
+        });
+        engine.AddComponent(building, SpriteComponent{
+            .texture = sf::Texture("resources/Buildings/Wood/Keep.png", false, sf::IntRect({0,0}, {32, 32})),
+            .sortLayer = 1
+        });
         
-    //     engine.AddComponent(building, NavigationComponent{});
-    //     engine.AddComponent(building, ObjectComponent{});
-    // }
+        engine.AddComponent(building, NavigationComponent{});
+        engine.AddComponent(building, ObjectComponent{});
+    }
     {
         animal = engine.CreateEntity();
         engine.AddComponent(animal, TransformComponent{
@@ -274,7 +274,6 @@ void FuzzyEureka::Start()
             .animation = Animation::Walk::Down,
             .spriteSheet = boar,
             .loop = true,
-            // .speedInSeconds = 0.4f,
         });
         engine.AddComponent(animal, NavigationComponent{});
         engine.AddComponent(animal, ObjectComponent{});
@@ -307,31 +306,41 @@ void FuzzyEureka::Update(const float deltaTime)
         camera.move(move);
     }
 
-    auto& mouse = GetInput().GetMouse();
-    if(mouse.IsMouseButtonPressed(sf::Mouse::Button::Left))
-    {
-        const auto& position = mouse.GetMousePosition(GetWindow());
+    // auto& mouse = GetInput().GetMouse();
+    // if(mouse.IsMouseButtonPressed(sf::Mouse::Button::Left))
+    // {
 
-        Node* node = grid->NodeFromAbsolutePosition({(float)position.x, (float)position.y});
-       
-        messageQueue.Send<MoveEntity>(node, animal);
-    }
-    if(mouse.IsMouseButtonPressed(sf::Mouse::Button::Right))
-    {
-        const auto& position = mouse.GetMousePosition(GetWindow());
-        Node* node = grid->NodeFromAbsolutePosition({(float)position.x, (float)position.y});
-        if(!node->IsLocked())
-            grid->Lock(node);
-        else
-            grid->Unlock(node);
+    // }
+    // if(mouse.IsMouseButtonPressed(sf::Mouse::Button::Right))
+    // {
+
+    //     const auto& position = mouse.GetMousePosition(GetWindow());
+
+    //     Node* node = grid->NodeFromAbsolutePosition({(float)position.x, (float)position.y});
         
-    }
+    //     if(node != nullptr)
+    //     {
+    //         messageQueue.Send<MoveEntity>(node, selectedEntity);
+    //     }
+    //     // const auto& position = mouse.GetMousePosition(GetWindow());
+    //     // Node* node = grid->NodeFromAbsolutePosition({(float)position.x, (float)position.y});
+    //     // if(node != nullptr)
+    //     // {
+    //     //     if(!node->IsLocked())
+    //     //     {
+    //     //         grid->Lock(node);
+    //     //     }
+    //     //     else
+    //     //     {
+    //     //         grid->Unlock(node);
+    //     //     }
+    //     // }   
+    // }
 }
 
 void FuzzyEureka::Render(sf::RenderWindow& window)
 {
     window.setView(camera);
-
 
     const sf::View& view = window.getView();
     sf::Vector2f offset(nodeSize.x, nodeSize.y);
@@ -344,8 +353,6 @@ void FuzzyEureka::Render(sf::RenderWindow& window)
     {
         int x = index / height;
         int y = index % height;
-
-        // sf::Vector2f position(x * nodeSize.x, y * nodeSize.y);
         
         if(!viewport.contains(world[index].getPosition()))
         {

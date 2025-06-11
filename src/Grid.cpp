@@ -210,25 +210,12 @@ const sf::Vector2f Grid::WorldPositionFromNode(Node* node)
 
 void Grid::Lock(Node* node, Entity entity)
 {
-    if(node == nullptr)
-    {  
-        Debug::LogWarning("Trying to lock a nullptr object");
-        return;
-    }
-
     node->blocked = true;
     node->owner = entity;
-
 }
 
 void Grid::Unlock(Node* node)
 {
-    if(node == nullptr)
-    {
-        Debug::LogWarning("Trying to lock a nullptr object");
-        return;
-    }
-
     node->blocked = false;
     node->owner = InvalidEntity;
 }
