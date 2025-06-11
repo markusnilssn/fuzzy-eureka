@@ -2,9 +2,15 @@
 #include "Engine/Engine.h"
 #include "Grid.h"
 
+#include <set>
+#include <unordered_set>
+#include <thread>
+
 #include "Engine/TransformComponent.h"
 
 #include <iostream>
+#include "Common/Measure.h"
+
 #include "GameMessages.h"
 
 AStarSystem::AStarSystem(Engine& engine, MessageQueue& messageQueue, Grid& grid)
@@ -79,7 +85,6 @@ void AStarSystem::Update(float deltaTime)
         auto& transform  = std::get<0>(registry);
         auto& navigation = std::get<1>(registry);
 
-
         if (!navigation.path.empty())
         {
             Node* nodeToGoTo = navigation.path.front();
@@ -141,38 +146,54 @@ const bool AStarSystem::IsWalkable(Node *node, Entity entity, const sf::Vector2i
     return true;
 }
 
+// GPT
+struct CompareFCost 
+{
+    bool operator()(const std::pair<Node*, int>& a, const std::pair<Node*, int>& b) const 
+    {
+        return a.second > b.second;
+    }
+};
+
 std::list<Node *> AStarSystem::FindPath(Node *startNode, Node *endNode, Entity entity, const sf::Vector2i &sizeInNodes)
 {
+    Measure measurement("Find Path");
+    
     if (endNode == nullptr || startNode == nullptr)
     {
         std::cout << "Unable to walk from or to node" << std::endl;
         return std::list<Node*>();
     }
 
-    std::list<Node*> openList;
-    std::list<Node*> closedList;
-    std::unordered_map<Node*, Weight> weights;
-
     if (!IsWalkable(startNode, entity, sizeInNodes) || !IsWalkable(endNode, entity, sizeInNodes))
     {
         std::cout << "Unable to walk from or to node" << std::endl;
-        return std::list<Node*>();
+        return std::list<Node*>(); // { startNode };
     }
 
-    openList.push_back(startNode);
+    std::unordered_set<Node*> openList;
+    std::unordered_set<Node*> closedList;
+    std::unordered_map<Node*, Weight> weights;
+    std::priority_queue<std::pair<Node*, int>, std::vector<std::pair<Node*, int>>, CompareFCost> openQueue; // GPT 
+
+    openList.insert(startNode);
     weights[startNode] = Weight {
         .parent = nullptr,
         .gCost  = 0,
         .hCost  = GetDistanceBetweenNodes(startNode, endNode)
     };
+    openQueue.emplace(startNode, weights[startNode].fCost());
 
     std::list<Node*> path;
 
     while (!openList.empty())
     {
-        Node* current = FindNodeWithLowestFCost(openList, weights);
-        openList.remove(current);
-        closedList.push_back(current);
+        // Node* current = FindNodeWithLowestFCost(openList, weights);
+        // openList.erase(current);
+        // closedList.insert(current);
+        Node* current = openQueue.top().first;
+        openQueue.pop();
+        openList.erase(current);
 
         if (current == endNode)
         {
@@ -190,11 +211,13 @@ std::list<Node *> AStarSystem::FindPath(Node *startNode, Node *endNode, Entity e
         std::list<Node*> neighbors = grid.FindNeighbors(current);
         for (Node* node : neighbors)
         {
-            bool containsInClosed = (std::find(closedList.begin(), closedList.end(), node) != closedList.end());
-            if (containsInClosed) 
-            {
-                continue;
-            }
+            if(closedList.count(node)) continue;
+            
+            // bool containsInClosed = (std::find(closedList.begin(), closedList.end(), node) != closedList.end());
+            // if (containsInClosed) 
+            // {
+            //     continue;
+            // }
 
             if (!IsWalkable(node, entity, sizeInNodes)) 
             {
@@ -217,9 +240,14 @@ std::list<Node *> AStarSystem::FindPath(Node *startNode, Node *endNode, Entity e
                 weight.gCost = tentativeG;
                 weight.parent = current;
 
-                bool containsInOpen = (std::find(openList.begin(), openList.end(), node) != openList.end());
-                if (!containsInOpen)
-                    openList.push_back(node);
+                if (!openList.count(node)) {
+                    openQueue.emplace(node, weight.fCost());
+                    openList.insert(node);
+                }
+
+                // bool containsInOpen = (std::find(openList.begin(), openList.end(), node) != openList.end());
+                // if (!containsInOpen)
+                //     openList.insert(node);
             }
         }
     }
@@ -232,14 +260,14 @@ std::list<Node *> AStarSystem::FindPath(Node *startNode, Node *endNode, Entity e
     return path;
 }
 
-Node *AStarSystem::FindNodeWithLowestFCost(const std::list<Node *>& nodes, std::unordered_map<Node*, Weight>& weights)
+Node *AStarSystem::FindNodeWithLowestFCost(const std::unordered_set<Node *>& nodes, std::unordered_map<Node*, Weight>& weights)
 {
     if (nodes.size() == 1)
     {
-        return nodes.front();
+        return *nodes.begin();
     }
 
-    Node* lowest = nodes.front();
+    Node* lowest = *nodes.begin();
 
     for (auto node : nodes)
     {

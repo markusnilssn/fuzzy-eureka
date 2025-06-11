@@ -2,6 +2,9 @@
 #include "Engine/System.h"
 #include <list>
 #include <queue>
+#include <set>
+#include <unordered_set>
+#include <thread>
 
 #include <SFML/Graphics.hpp>
 #include <SFML/System.hpp>
@@ -57,7 +60,7 @@ private:
     
     const bool IsWalkable(Node* node, Entity entity, const sf::Vector2i& sizeInNodes);
     std::list<Node*> FindPath(Node* startNode, Node* endNode, Entity entity, const sf::Vector2i& sizeInNodes);
-    Node* FindNodeWithLowestFCost(const std::list<Node *>& nodes, std::unordered_map<Node*, Weight>& costs);
+    Node* FindNodeWithLowestFCost(const std::unordered_set<Node *>& nodes, std::unordered_map<Node*, Weight>& costs);
     static int GetDistanceBetweenNodes(Node* first, Node* second);
 
 };

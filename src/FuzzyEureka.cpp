@@ -264,7 +264,7 @@ void FuzzyEureka::Start()
     {
         animal = engine.CreateEntity();
         engine.AddComponent(animal, TransformComponent{
-            .position = sf::Vector2f(0,0),
+            .position = sf::Vector2f(48 * nodeSize.x,18 * nodeSize.y),
             .size = sf::Vector2f(nodeSize.x, nodeSize.y),
             .angle = sf::degrees(0),
         });
