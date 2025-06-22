@@ -18,6 +18,6 @@ public:
 private:
     std::queue<Entity> availableEntities;
     std::array<Signature, MAX_ENTITIES> signatures;
-    Entity livingEntityCount;
+    Entity livingEntityCount{0};
 
 };

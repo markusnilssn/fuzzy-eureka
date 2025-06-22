@@ -24,6 +24,8 @@ public:
     [[nodiscard]] Node* NodeFromAbsolutePosition(const sf::Vector2f& absolutePosition);
     [[nodiscard]] const sf::Vector2f WorldPositionFromNode(Node* node);
 
+    [[nodiscard]] Node* FindClosestNode(Node* currentNode, Node* node);
+
     void Lock(Node* nodes, Entity entity = InvalidEntity);
     void Unlock(Node* nodes);
 
@@ -42,8 +44,8 @@ public:
 private:
     Node** nodes;
 
-    int width;
-    int height;
+    int width{};
+    int height{};
 
     sf::Vector2i nodeSize;
 

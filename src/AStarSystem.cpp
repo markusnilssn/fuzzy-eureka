@@ -75,7 +75,6 @@ void AStarSystem::Update(float deltaTime)
 
     if(mouse.IsMouseButtonReleased(sf::Mouse::Button::Left))
     {
-
         std::set<Node*> nodes = grid.NodesUnderRectangle(selectionBox);
         isSelecting = false;
 
@@ -235,7 +234,13 @@ std::list<Node *> AStarSystem::FindPath(Node *startNode, Node *endNode, Entity e
 
     if (!IsWalkable(startNode, entity, sizeInNodes) || !IsWalkable(endNode, entity, sizeInNodes))
     {
-        std::cout << "Unable to walk from or to node" << std::endl;
+        // Node* closestNode = grid.FindClosestNode(startNode, endNode);
+
+        // auto pathToClosest = FindPath(startNode, closestNode, entity, sizeInNodes);
+
+        // return pathToClosest;
+
+        // std::cout << "Unable to walk from or to node" << std::endl;
         return std::list<Node*>(); // { startNode };
     }
 
@@ -256,9 +261,6 @@ std::list<Node *> AStarSystem::FindPath(Node *startNode, Node *endNode, Entity e
 
     while (!openList.empty())
     {
-        // Node* current = FindNodeWithLowestFCost(openList, weights);
-        // openList.erase(current);
-        // closedList.insert(current);
         // GPT 
         Node* current = openQueue.top().first;
         openQueue.pop();
@@ -314,10 +316,6 @@ std::list<Node *> AStarSystem::FindPath(Node *startNode, Node *endNode, Entity e
                     openQueue.emplace(node, weight.fCost());
                     openList.insert(node);
                 }
-                
-                // bool containsInOpen = (std::find(openList.begin(), openList.end(), node) != openList.end());
-                // if (!containsInOpen)
-                //     openList.insert(node);
             }
         }
     }

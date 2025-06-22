@@ -7,13 +7,52 @@
 #include <vector>
 #include <iostream>
 
-enum struct Read
-{
-    LeftToRight,
-    RightToLeft,
-    UpToDown,
-    DownToUp,
-};
+// Cannot be RAII 
+// struct SpriteSheet final
+// {
+//     using Sequence = std::vector<sf::IntRect>;
+
+//     sf::Texture texture;
+//     sf::Vector2i clipSize;
+//     std::unordered_map<size_t, Sequence> sequences;
+
+//     void LoadTexture(const std::string& filePath, const sf::Vector2i clipSize)
+//     {
+//         bool success = texture.loadFromFile(filePath, false);
+//         Debug::Assert(success, "Failed to load sprite sheet");
+//         this->clipSize = clipSize;
+//     }
+
+//     void Cut(const std::string& name, const sf::Vector2i& start, const sf::Vector2i& end) 
+//     {
+//         size_t hashCode = std::hash<std::string>{}(name);
+
+//         constexpr int offset = 1;
+//         int width = (end.x - start.x) + offset;
+//         int height = (end.y - start.y) + offset;
+
+//         int frames = width * height;
+
+//         Sequence sequence{};
+//         for (int i = 0; i < frames; i++)
+//         {
+//             int x = i / height;
+//             int y = i % height;
+
+//             sequence.emplace_back(sf::IntRect(sf::Vector2i(x * clipSize.x, y * clipSize.y), clipSize));
+//         }
+        
+//         sequences.insert({hashCode, std::move(sequence)});
+//     }
+
+//     const Sequence& GetSequence(const std::string& name)
+//     {
+//         size_t hashCode = std::hash<std::string>{}(name);
+
+//         return sequences[hashCode];
+//     }
+// };
+
 
 namespace Animation
 {
@@ -28,51 +67,6 @@ namespace Animation
     namespace Action {}
 }
 
-// Cannot be RAII 
-struct SpriteSheet final
-{
-    using Sequence = std::vector<sf::IntRect>;
-
-    sf::Texture texture;
-    sf::Vector2i clipSize;
-    std::unordered_map<size_t, Sequence> sequences;
-
-    void LoadTexture(const std::string& filePath, const sf::Vector2i clipSize)
-    {
-        bool success = texture.loadFromFile(filePath, false);
-        Debug::Assert(success, "Failed to load sprite sheet");
-        this->clipSize = clipSize;
-    }
-
-    void Cut(const std::string& name, const sf::Vector2i& start, const sf::Vector2i& end) 
-    {
-        size_t hashCode = std::hash<std::string>{}(name);
-
-        constexpr int offset = 1;
-        int width = (end.x - start.x) + offset;
-        int height = (end.y - start.y) + offset;
-
-        int frames = width * height;
-
-        Sequence sequence{};
-        for (int i = 0; i < frames; i++)
-        {
-            int x = i / height;
-            int y = i % height;
-
-            sequence.emplace_back(sf::IntRect(sf::Vector2i(x * clipSize.x, y * clipSize.y), clipSize));
-        }
-        
-        sequences.insert({hashCode, std::move(sequence)});
-    }
-
-    const Sequence& GetSequence(const std::string& name)
-    {
-        size_t hashCode = std::hash<std::string>{}(name);
-
-        return sequences[hashCode];
-    }
-};
 
 // struct Time final
 // {
@@ -87,18 +81,20 @@ struct AnimatorComponent
 {
     SpriteSheet spriteSheet;
     std::string animation;
-    bool loop;
-    size_t currentFrame = 0;
-    float speed = 1.0f;
-    float tick = 0;
+    bool loop{false};
+    size_t currentFrame{0ull};
+    float speed{1.0f};
+    float tick{};
     // Time time;
-    bool animating = false;
+    bool animating{false};
 };
 
 struct SpriteComponent 
 {
-    sf::Texture texture;
-    uint_fast16_t sortLayer;
-    sf::Color color = sf::Color::White;
+    using Layer = uint_fast16_t;
+
+    sf::Texture* texture;
+    Layer sortLayer{0u};
+    sf::Color color{sf::Color::White};
 };
 

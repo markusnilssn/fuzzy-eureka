@@ -15,7 +15,7 @@ Grid::Grid(const int width, const int height, const sf::Vector2i& nodeSize)
     {
         nodes[x] = new Node[height];
         for (int y = 0; y < height; y++)
-        {
+        
             auto& node = nodes[x][y];
             node.x = x;
             node.y = y;
@@ -215,6 +215,35 @@ Node *Grid::NodeFromAbsolutePosition(const sf::Vector2f &absolutePosition)
 const sf::Vector2f Grid::WorldPositionFromNode(Node* node)
 {
     return sf::Vector2f((node->x * nodeSize.x), (node->y * nodeSize.y));
+}
+
+Node *Grid::FindClosestNode(Node* currentNode, Node *node)
+{
+    Node* returnValue = nullptr;
+    float currentDistance = std::numeric_limits<float>::max();
+
+    for(Node* neighbour : FindNeighbors(node))
+    {
+        if(!neighbour->IsLocked())
+        {
+            continue;
+        }
+
+        sf::Vector2f difference = neighbour->WorldPosition() - currentNode->WorldPosition();
+        float distance = difference.length();
+        if(distance < currentDistance)
+        {
+            returnValue = neighbour;
+            currentDistance = distance;
+        }
+    }
+
+    if(returnValue == nullptr)
+    {
+        std::cout << "Every node close to target node is occupied" << std::endl;
+    }
+
+    return returnValue;
 }
 
 void Grid::Lock(Node* node, Entity entity)

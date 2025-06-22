@@ -13,6 +13,7 @@
 #include "Node.h"
 #include "GameMessages.h"
 #include "PearlyNoise.hpp"
+#include "NatureComponent.h"
 
 #include <optional>
 #include <set>
@@ -50,6 +51,7 @@ void FuzzyEureka::LoadFromPearlyNoise(const int width, const int height)
 
     const siv::PerlinNoise::seed_type seed = 12345u;
     const siv::PerlinNoise perlin{ seed };
+    const siv::PerlinNoise perlin2{ seed + 1 };
 
 
     auto isDeepWater = [](float noise) { return noise < 0.455; };
@@ -60,6 +62,8 @@ void FuzzyEureka::LoadFromPearlyNoise(const int width, const int height)
     auto isShallowGrass = [](float noise) { return noise < 0.6; };
     auto isDeepGrass = [](float noise) { return noise < 0.7; };
     auto isMountain = [](float noise) { return noise >= 0.7f; };
+
+    auto isTree = [&](float noise) { return noise > 0.6  && noise < 0.65; };
 
     constexpr float Invalid = -1.0f;
 
@@ -79,18 +83,21 @@ void FuzzyEureka::LoadFromPearlyNoise(const int width, const int height)
 
     // Generate
     float** noises = new float*[width];
+    float** noises2 = new float*[width];
     for(int_fast32_t  x = 0; x < width; x++)
     {
         noises[x] = new float[height];
+        noises2[x] = new float[height];
         for (int_fast32_t  y = 0; y < height; y++)
         {
             float xpos = x * 0.01f;
             float ypos = y * 0.01f;
             float octaves = 6;
             float persistence = 0.5;
-            // float lacunarity = 2.0;
+            // float lacunarity = 2.0;            
 
             noises[x][y] = perlin.octave2D_01(xpos, ypos, octaves, persistence);
+            noises2[x][y] = perlin.octave2D_01(xpos, ypos, octaves, persistence);
         }
     }
 
@@ -203,13 +210,35 @@ void FuzzyEureka::LoadFromPearlyNoise(const int width, const int height)
                 }
             };
 
+            sf::Vector2f position(x*nodeSize.x, y *nodeSize.y);
+            // if(isTree(noises2[x][y]))
+            // {
+            //     auto entity = engine.CreateEntity();
+            //     engine.AddComponent(entity, TransformComponent{
+            //         .position = position,
+            //     });
+
+            //     // sf::Texture("resources/Nature/Trees.png", false, sf::IntRect(sf::Vector2i(random.Next(1, 3) * nodeSize.x, 0), sf::Vector2i(nodeSize.x, nodeSize.y)))
+                
+            //     engine.AddComponent(entity, SpriteComponent{
+            //         .sprite = ,
+            //     });
+
+            //     engine.AddComponent(entity, NatureComponent{
+            //         .type = Nature::Wood,
+            //         .amount = 50,
+            //     });
+            //     engine.AddComponent(entity, ObjectComponent{});
+
+            // }
+
             auto noise = noises[x][y];
 
             if(isWater(noise) || isMountainEdge(noise))
                 grid->Lock(grid->GetNodeAt(x, y));
 
             auto sprite = createEnvironment(noise);
-            sprite.setPosition(sf::Vector2f(x*nodeSize.x, y *nodeSize.y));
+            sprite.setPosition(position);
             world.emplace_back(std::move(sprite));
         }
     }
@@ -230,6 +259,8 @@ void FuzzyEureka::Start()
     engine.RegisterComponent<NavigationComponent>();
     engine.RegisterComponent<ObjectComponent>();
     engine.RegisterComponent<AnimatorComponent>();
+    engine.RegisterComponent<DestructComponent>();
+    engine.RegisterComponent<NatureComponent>();
     
     engine.RegisterSystem<RenderSystem>(nodeSize);
 
@@ -237,7 +268,14 @@ void FuzzyEureka::Start()
     grid = std::make_shared<Grid>(width, height, nodeSize);
     LoadFromPearlyNoise(width, height);
 
-    engine.RegisterSystem<AStarSystem>(messageQueue, *(grid.get()), GetConcurrency(), GetInput(), GetWindow());
+    auto& content = GetContent();
+    auto& concurrency = GetContent();
+    auto& input = GetContent();
+    auto& window = GetContent();
+    
+    // content.LoadTexture("Building/Wood/Keep")
+
+    engine.RegisterSystem<AStarSystem>(messageQueue, *(grid.get()), concurrency, input, window);
 
     std::vector<Entity> entities;
     {
@@ -248,8 +286,9 @@ void FuzzyEureka::Start()
             .angle = sf::degrees(0),
         });
         engine.AddComponent(building, SpriteComponent{
-            .texture = sf::Texture("resources/Buildings/Wood/Keep.png", false, sf::IntRect({0,0}, {32, 32})),
-            .sortLayer = 1
+            // .texture = sf::Texture("resources/Buildings/Wood/Keep.png", false, sf::IntRect({0,0}, {32, 32})),
+            .texture = content.GetTexture("Buildings/Wood/Keep"),
+            .sortLayer = 1,
         });
         
         engine.AddComponent(building, NavigationComponent{});

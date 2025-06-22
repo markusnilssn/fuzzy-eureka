@@ -7,8 +7,8 @@
 
 struct MoveEntity : Message 
 {
-    Node* node;
-    Entity entity;
+    Node* node{};
+    Entity entity{InvalidEntity};
 
     MoveEntity(Node* node, Entity entity) 
         : node(node)

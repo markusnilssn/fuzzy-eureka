@@ -23,7 +23,7 @@ private:
     std::queue<std::function<void()>> callbacks;
     std::mutex mutex;
 
-    std::atomic_bool isRunning;
+    std::atomic_bool isRunning{false};
     std::condition_variable conditional;
 
     void Update();

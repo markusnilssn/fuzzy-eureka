@@ -1,0 +1,6 @@
+todo:
+
+Chunks
+Line of sight
+Proper Animation
+Select unit

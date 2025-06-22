@@ -25,11 +25,11 @@ public:
     const Entity Owner() { return owner; }
 
 private:
-    int x;
-    int y;
+    int x{-1};
+    int y{-1};
     sf::Vector2f worldPosition;
     // sf::Vector2f centerPosition;
-    Entity owner = InvalidEntity;
-    bool blocked = false;
+    Entity owner{InvalidEntity};
+    bool blocked{false};
     
 };

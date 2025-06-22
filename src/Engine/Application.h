@@ -11,6 +11,7 @@
 #include "MessageQueue.h"
 #include "Scene.h"
 #include "Concurrency.h"
+#include "Content.h"
 
 class Application 
 {
@@ -19,8 +20,8 @@ public:
     {
         std::string title;
         sf::Vector2u windowSize;
-        unsigned int framelimit;
-        bool vsync;
+        unsigned int framelimit{144};
+        bool vsync{false};
     };
 
 public:
@@ -41,6 +42,7 @@ protected:
     sf::RenderWindow& GetWindow();
     Input& GetInput();
     Concurrency& GetConcurrency();
+    Content& GetContent();
 
     Engine engine;
     MessageQueue messageQueue;
@@ -49,6 +51,8 @@ private:
     std::unique_ptr<Input> input;
     std::unique_ptr<sf::RenderWindow> window;
     std::unique_ptr<Concurrency> concurrency;
+    std::unique_ptr<Content> content;
+
 
     std::unordered_map<size_t, std::unique_ptr<Scene>> scenes; // Manage scenes! 
     // Scene& activeScene;

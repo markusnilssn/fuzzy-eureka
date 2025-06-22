@@ -74,6 +74,11 @@ Concurrency &Application::GetConcurrency()
     return *(concurrency.get());
 }
 
+Content &Application::GetContent()
+{
+    return *(content.get());
+}
+
 void Application::HandleEvents(sf::RenderWindow &window)
 {
     // Manage core window events here!

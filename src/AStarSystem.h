@@ -18,7 +18,7 @@
 // cloud be a local set 
 struct NavigationComponent 
 {   
-    Node* endNode;
+    Node* endNode{};
 
     std::list<Node*> path;
 };
@@ -36,10 +36,10 @@ class AStarSystem final : public System
 {
     struct Weight
     {
-        Node* parent;
+        Node* parent{};
         
-        int gCost;
-        int hCost;
+        int gCost{};
+        int hCost{};
 
         const float fCost() const { return gCost + hCost; }
     };
@@ -65,7 +65,7 @@ private:
     std::unordered_set<Entity> selectedEntities;
     sf::FloatRect selectionBox;
     sf::Vector2f startPosition;
-    bool isSelecting = false;
+    bool isSelecting{false};
     
     const bool IsWalkable(Node* node, Entity entity, const sf::Vector2i& sizeInNodes);
     std::list<Node*> FindPath(Node* startNode, Node* endNode, Entity entity, const sf::Vector2i& sizeInNodes);
