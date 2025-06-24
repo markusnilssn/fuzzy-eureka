@@ -1,0 +1,59 @@
+
+# constants
+const node16: {16, 16};
+const node16x32: {16, 32};
+const node32x16: {32, 16};
+
+namespace animations: [
+    const walk-left: "walk-left";
+    const walk-right: "walk-right";
+    const walk-up: "walk-up";
+    const walk-down: "walk-down";
+];
+
+# ground
+sprite-sheet Cliff-Water: [
+    path: "Ground/Cliff-Water.png",
+    size: node16,
+];
+
+sprite-sheet Cliff: [
+    path: "Ground/Cliff.png",
+    size: node16,
+];
+
+sprite-sheet Grass: [
+    path: "Ground/Grass.png",
+    size: node16,
+];
+
+sprite-sheet Shore: [
+    path: "Ground/Shore.png",
+    size: node16,
+];
+
+sprite-sheet Winter: [
+    path: "Ground/Winter.png",
+    size: node16,
+];
+
+sprite-sheet Dead-Grass: [
+    path: "Ground/DeadGrass.png",
+    size: node16,
+];
+
+sprite-sheet Textured-Grass: [
+    name: "",
+    path: "Ground/TexturedGrass.png",
+    size: node16,
+];
+
+sprite-sheet Trees: [
+    path: "Nature/Trees.png",
+    size: node16,
+];
+
+
+
+# textures
+
