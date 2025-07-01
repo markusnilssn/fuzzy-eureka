@@ -7,6 +7,8 @@
 #include <vector>
 #include <iostream>
 
+#include "Content.h"
+
 // Cannot be RAII 
 // struct SpriteSheet final
 // {
@@ -54,7 +56,7 @@
 // };
 
 
-namespace Animation
+namespace Sequence
 {
     namespace Walk
     {
@@ -79,8 +81,8 @@ namespace Animation
 
 struct AnimatorComponent 
 {
-    SpriteSheet spriteSheet;
-    std::string animation;
+    Animation animation;
+    std::string key;
     bool loop{false};
     size_t currentFrame{0ull};
     float speed{1.0f};

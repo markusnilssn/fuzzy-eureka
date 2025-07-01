@@ -29,6 +29,8 @@ void Application::Run(const Settings& settings)
     window->setVerticalSyncEnabled(settings.vsync); // Enable VSync
     window->setFramerateLimit(settings.framelimit);
 
+    content = std::make_unique<Content>("");
+
     Start();
     engine.Start();
 

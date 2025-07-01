@@ -1,11 +1,14 @@
 #include "RenderSystem.h"
 #include "Engine.h"
+
 #include "TransformComponent.h"
 #include "SpriteComponent.h"
+
+#include "stl.h"
+
 #include <map>
 #include <list>
 #include <math.h>
-#include "stl.h"
 
 RenderSystem::RenderSystem(Engine& engine, const sf::Vector2i& nodeSize)
     : System(engine)
@@ -39,12 +42,12 @@ void RenderSystem::Update(const float deltaTime)
     {
         auto& animator = std::get<0>(registry);
 
-        if(animator.animation.size() == 0)
+        if(animator.key.size() == 0)
         {
             continue;
         }
 
-        auto sequences = animator.spriteSheet.GetSequence(animator.animation);
+        auto sequences = animator.animation.GetSequence(animator.key);
         animator.tick += deltaTime;
         if(animator.tick >= animator.speed) 
         {
@@ -74,7 +77,7 @@ void RenderSystem::Render(sf::RenderWindow& window)
             continue;
         }
 
-        sf::Sprite drawable(sprite.texture);
+        sf::Sprite drawable(*sprite.texture);
         drawable.setPosition(transform.position);
         drawable.setColor(sprite.color);
         
@@ -91,10 +94,10 @@ void RenderSystem::Render(sf::RenderWindow& window)
             continue;
         }
 
-        sf::Sprite sprite(animator.spriteSheet.texture);
+        sf::Sprite sprite(*animator.animation.texture);
         sprite.setPosition(transform.position);
-
-        auto sequences = animator.spriteSheet.GetSequence(animator.animation);
+        
+        auto sequences = animator.animation.GetSequence(animator.key);
         sprite.setTextureRect(sequences[animator.currentFrame]);
     
         window.draw(sprite);

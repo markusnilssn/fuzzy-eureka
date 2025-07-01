@@ -1,6 +1,5 @@
 #pragma once 
 #include "Engine/Application.h"
-#include "Content.h"
 
 #include "Common/Random.h"
 #include "Grid.h"
@@ -32,12 +31,7 @@ private:
     // sf::Time currentTime;
     // sf::Time previousTime;
 
-    TileSet cliff;
-    TileSet cliffWater;
-    TileSet winter;
-    TileSet grass;
-    TileSet shore;
-    void LoadFromPearlyNoise(const int width, const int height);
+    // void LoadFromPearlyNoise(const int width, const int height);
 
     // sf::Font font;
     int width{};

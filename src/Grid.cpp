@@ -2,6 +2,7 @@
 #include "Common/Debug.h"
 #include <iostream>
 
+#include <cmath>
 #include <set>
 
 Grid::Grid(const int width, const int height, const sf::Vector2i& nodeSize)
@@ -15,7 +16,7 @@ Grid::Grid(const int width, const int height, const sf::Vector2i& nodeSize)
     {
         nodes[x] = new Node[height];
         for (int y = 0; y < height; y++)
-        
+        {
             auto& node = nodes[x][y];
             node.x = x;
             node.y = y;

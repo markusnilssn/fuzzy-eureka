@@ -1,0 +1,25 @@
+import constants;
+
+# constants
+const node16: {16, 16};
+const node16x32: {16, 32};
+const node32x16: {32, 16};
+
+namespace animations: [
+    const walk-left: "walk-left";
+    const walk-right: "walk-right";
+    const walk-up: "walk-up";
+    const walk-down: "walk-down";
+];
+
+# ground
+sprite-sheet Cliff-Water: [
+    path: "Ground/Cliff-Water.png",
+    size: node16,
+];
+
+# textures
+texture Block: [
+    path: "Block/Block.png",
+    size: node16,
+];

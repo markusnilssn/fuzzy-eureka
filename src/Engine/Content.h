@@ -80,15 +80,16 @@ enum struct Read
 //     }
 // };
 
-class SpriteSheet
+class SpriteSheet final
 {
 public:
     using Tile = sf::IntRect;
 
 public:
     sf::Texture* texture{};
-    sf::Vector2i tileSize;
+    sf::Vector2i tileSize{};
 
+    SpriteSheet() = default;
     SpriteSheet(sf::Texture* texture, const sf::Vector2i& tileSize);
 
     void Cut(const std::string& name, const sf::Vector2i& index);
@@ -99,17 +100,18 @@ private:
 
 };
 
-class Animation
+class Animation final
 {
 public:
-    using Clip = sf::IntRect;
-    using Sequence = std::vector<Clip>;
+    using Frame = sf::IntRect;
+    using Sequence = std::vector<Frame>;
 
 public:
     sf::Texture* texture{};
-    sf::Vector2i clipSize;
+    sf::Vector2i frameSize{};
 
-    Animation(sf::Texture* texture, const sf::Vector2i& clipSize);
+    Animation() = default;
+    Animation(sf::Texture* texture, const sf::Vector2i& frameSize);
     void Cut(const std::string& name, const sf::Vector2i& start, const sf::Vector2i& end);
     [[nodiscard]] const Sequence& GetSequence(const std::string& name);
 
@@ -117,21 +119,18 @@ private:
     std::unordered_map<size_t, std::vector<sf::IntRect>> sequences;
 };
 
-class Content 
+class Content final
 {   
 public:
-    Content();
+    Content(const std::filesystem::path& contentJsonPath);
 
     [[nodiscard]] sf::Texture* GetTexture(const std::string& texturePath);
     [[nodiscard]] sf::Font* GetFont(const std::string& fontPath);
 
     [[nodiscard]] sf::Texture* CombineTextures(const std::string& name, sf::Texture* front, sf::Texture* back);
 
-    // void LoadSpriteSheet(const std::string& filePath, const sf::Vector2i tileSize = sf::Vector2i(16, 16));
+    void LoadSpriteSheet(const std::string& filePath, const sf::Vector2i tileSize = sf::Vector2i(16, 16));
     // void LoadTexture(const std::string& filePath, const sf::Vector2i& tileSize = { 16, 16 });
-
-    void LoadTexture(const std::string& filePath);
-    void LoadFont(const std::string& filePath);
 
 private:
     std::unordered_map<size_t, std::unique_ptr<sf::Texture>> textures;
@@ -144,4 +143,7 @@ private:
 
     std::string GetRelativePath(const std::string& filePath);
     std::string relativePath;
+
+    sf::Texture* LoadTexture(const std::string& filePath);
+    sf::Font* LoadFont(const std::string& filePath);
 };

@@ -11,10 +11,10 @@ Mouse::Mouse(sf::RenderWindow& window)
 
 const bool Mouse::IsMouseButtonPressed(sf::Mouse::Button button)
 {
-    if(!window.hasFocus())
-    {
-        return false;
-    }
+    // if(!window.hasFocus())
+    // {
+    //     return false;
+    // }
 
     auto iterator = mouseButtonStates.find(button);
     if(iterator == mouseButtonStates.end())
@@ -33,10 +33,10 @@ const bool Mouse::IsMouseButtonPressed(sf::Mouse::Button button)
 
 const bool Mouse::IsMouseButtonReleased(sf::Mouse::Button button)
 {
-    if(!window.hasFocus())
-    {
-        return false;
-    }
+    // if(!window.hasFocus())
+    // {
+    //     return false;
+    // }
 
     auto iterator = mouseButtonStates.find(button);
     if(iterator == mouseButtonStates.end())
@@ -55,10 +55,10 @@ const bool Mouse::IsMouseButtonReleased(sf::Mouse::Button button)
 
 const bool Mouse::IsMouseButtonDown(sf::Mouse::Button button)
 {
-    if(!window.hasFocus())
-    {
-        return false;
-    }
+    // if(!window.hasFocus())
+    // {
+    //     return false;
+    // }
 
     auto iterator = mouseButtonStates.find(button);
     if(iterator == mouseButtonStates.end())
@@ -89,11 +89,11 @@ const sf::Vector2f Mouse::GetMousePosition(const sf::RenderWindow& window)
     // float scaleX = viewSize.x / static_cast<float>(windowSize.x);
     // float scaleY = viewSize.y / static_cast<float>(windowSize.y);
 
-            const sf::Vector2f worldPosition = window.mapPixelToCoords(
-            sf::Vector2i(static_cast<int>(raw.x), static_cast<int>(raw.y)),
-            window.getView()
-        );
-        return worldPosition;
+    const sf::Vector2f worldPosition = window.mapPixelToCoords(
+        sf::Vector2i(static_cast<int>(raw.x), static_cast<int>(raw.y)),
+        window.getView()
+    );
+    return worldPosition;
 
 
     // sf::Vector2f corrected { raw.x * scaleX, raw.y * scaleY };

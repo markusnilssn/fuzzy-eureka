@@ -8,12 +8,14 @@
 Keyboard::Keyboard(sf::RenderWindow& window)
     : window(window)
 {  
+    // Utils
     RegisterKey(sf::Keyboard::Key::Escape);
     RegisterKey(sf::Keyboard::Key::Space);
     RegisterKey(sf::Keyboard::Key::Tab);
     RegisterKey(sf::Keyboard::Key::LShift);
     RegisterKey(sf::Keyboard::Key::RShift);
 
+    // WASD
     RegisterKey(sf::Keyboard::Key::A);
     RegisterKey(sf::Keyboard::Key::D);
     RegisterKey(sf::Keyboard::Key::W);
@@ -45,10 +47,10 @@ void Keyboard::UnregisterKey(sf::Keyboard::Key key)
 
 const bool Keyboard::IsKeyDown(sf::Keyboard::Key key)
 {
-    if(!window.hasFocus())
-    {
-        return false;
-    }
+    // if(!window.hasFocus())
+    // {
+    //     return false;
+    // }
 
 #ifdef DEBUG_MODE    
     if(registeredKeys.find(key) == registeredKeys.end())
@@ -78,10 +80,10 @@ const bool Keyboard::IsKeyUp(sf::Keyboard::Key key)
 
 const bool Keyboard::IsKeyPressed(sf::Keyboard::Key key)
 {
-    if(!window.hasFocus())
-    {
-        return false;
-    }
+    // if(!window.hasFocus())
+    // {
+    //     return false;
+    // }
     
 #ifdef DEBUG_MODE    
     if(registeredKeys.find(key) == registeredKeys.end())
