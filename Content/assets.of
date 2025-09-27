@@ -5,6 +5,8 @@ const node16: {16, 16};
 const node16x32: {16, 32};
 const node32x16: {32, 16};
 
+const value: 1;
+
 namespace animations: [
     const walk-left: "walk-left";
     const walk-right: "walk-right";
@@ -14,12 +16,18 @@ namespace animations: [
 
 # ground
 sprite-sheet Cliff-Water: [
-    path: "Ground/Cliff-Water.png",
-    size: node16,
+    path: "Ground/Cliff-Water.png";
+    size: node16;
+];
+
+# Animations 
+animation Boar: [
+    path: "Animals/Pig";
+    size: {16, 16};
 ];
 
 # textures
 texture Block: [
-    path: "Block/Block.png",
-    size: node16,
+    path: "Block/Block.png";
+    size: {16, 16};
 ];

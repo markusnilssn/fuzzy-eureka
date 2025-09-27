@@ -31,5 +31,11 @@ target_include_directories(main PRIVATE
     ${CMAKE_SOURCE_DIR}/src  # This ensures src is also included for header search
 )
 
+# set(CMAKE_CXX_CLANG_TIDY "clang-tidy;-checks=*")
+# set(CMAKE_CXX_CLANG_TIDY 
+#   clang-tidy;
+#   -header-filter=.;
+#   -checks=*;)
+
 # Link the necessary SFML libraries
 target_link_libraries(main PRIVATE SFML::Graphics SFML::Window SFML::System)

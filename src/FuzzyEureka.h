@@ -31,7 +31,7 @@ private:
     // sf::Time currentTime;
     // sf::Time previousTime;
 
-    // void LoadFromPearlyNoise(const int width, const int height);
+    void LoadFromPearlyNoise(const int width, const int height);
 
     // sf::Font font;
     int width{};
