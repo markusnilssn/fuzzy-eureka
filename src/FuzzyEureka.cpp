@@ -24,7 +24,61 @@ FuzzyEureka::FuzzyEureka()
     , shore("resources/Ground/Shore.png", 16)
     , winter("resources/Ground/Winter.png", 16)
 {
+    sf::Vector2i x16(16, 16);
+    sf::Vector2i x64(64, 64);
+
+    // Ground
+    content.LoadTexture2D("Ground/Cliff-Water.png", x16);
+    content.LoadTexture2D("Ground/Cliff.png", x16);
+    content.LoadTexture2D("Ground/DeadGrass.png", x16);
+    content.LoadTexture2D("Ground/Grass.png", x16);
+    content.LoadTexture2D("Ground/Shore.png", x16);
+    content.LoadTexture2D("Ground/TexturedGrass.png", x16);
+    content.LoadTexture2D("Ground/Winter.png", x16);
+
+    content.LoadTexture2D("Buildings/Wood/Barracks.png", x16);
+    content.LoadTexture2D("Buildings/Wood/CaveV2.png", x16);
+    content.LoadTexture2D("Buildings/Wood/Chapels.png", x16);
+    content.LoadTexture2D("Buildings/Wood/Docks.png", x16);
+    content.LoadTexture2D("Buildings/Wood/Houses.png", x16);
+    content.LoadTexture2D("Buildings/Wood/Huts.png", x16);
+    content.LoadTexture2D("Buildings/Wood/Keep.png", x64);
+    content.LoadTexture2D("Buildings/Wood/Market.png", x16);
+    content.LoadTexture2D("Buildings/Wood/Resources.png", x16);
+    content.LoadTexture2D("Buildings/Wood/Taverns.png", x16);
+    content.LoadTexture2D("Buildings/Wood/Tower.png", x16);
+    content.LoadTexture2D("Buildings/Wood/Tower2.png", x16);
+    content.LoadTexture2D("Buildings/Wood/Workshops.png", x16);
+
+    content.LoadTexture2D("Nature/Cactus.png", x16);
+    content.LoadTexture2D("Nature/Coconut.png", x16);
+    content.LoadTexture2D("Nature/DeadTrees.png", x16);
+    content.LoadTexture2D("Nature/PineTrees.png", x16);
+    content.LoadTexture2D("Nature/Rocks.png", x16);
+    content.LoadTexture2D("Nature/Trees.png", x16);
+    content.LoadTexture2D("Nature/TumbleWeed.png", x16);
+    content.LoadTexture2D("Nature/Wheatfield.png", x16);
+    content.LoadTexture2D("Nature/WinterDeadTrees.png", x16);
+    content.LoadTexture2D("Nature/WinterTrees.png", x16);
     
+    content.LoadTexture2D("Templates/16x16Large.png", x16);
+    content.LoadTexture2D("Templates/16x16Small.png", x16);
+    content.LoadTexture2D("Templates/32x32Small.png", x16);
+
+    content.LoadTexture2D("Characters/Workers/FarmerTemplate.png", x16);
+
+    content.LoadTexture2D("Characters/Soldiers/Melee/AxemanTemplate.png", x16);
+    content.LoadTexture2D("Characters/Soldiers/Melee/SpearmanTemplate.png", x16);
+    content.LoadTexture2D("Characters/Soldiers/Melee/SwordsmanTemplate.png", x16);
+
+    content.LoadTexture2D("Characters/Soldiers/Ranged/BowmanTemplate.png", x16);
+    content.LoadTexture2D("Characters/Soldiers/Ranged/MageTemplate.png", x16);
+    content.LoadTexture2D("Characters/Soldiers/Ranged/Balista.png", x16);
+
+    content.LoadTexture2D("User Interface/Highlighted-Boxes.png", x16);
+    content.LoadTexture2D("User Interface/BoxSelector.png", x16);
+    content.LoadTexture2D("User Interface/UiIcons.png", x16);
+
 }
 
 FuzzyEureka::~FuzzyEureka()
@@ -61,6 +115,9 @@ void FuzzyEureka::LoadFromPearlyNoise(const int width, const int height)
     auto isDeepGrass = [](float noise) { return noise < 0.7; };
     auto isMountain = [](float noise) { return noise >= 0.7f; };
 
+    auto isTree = [&](float noise) { return noise > 0.6  && noise < 0.65; };
+
+
     constexpr float Invalid = -1.0f;
 
     auto isGrass = [&](float noise) -> bool
@@ -79,9 +136,12 @@ void FuzzyEureka::LoadFromPearlyNoise(const int width, const int height)
 
     // Generate
     float** noises = new float*[width];
+    float** noises2 = new float*[width];
+
     for(int_fast32_t  x = 0; x < width; x++)
     {
         noises[x] = new float[height];
+        noises2[x] = new float[height];
         for (int_fast32_t  y = 0; y < height; y++)
         {
             float xpos = x * 0.01f;
@@ -91,6 +151,8 @@ void FuzzyEureka::LoadFromPearlyNoise(const int width, const int height)
             // float lacunarity = 2.0;
 
             noises[x][y] = perlin.octave2D_01(xpos, ypos, octaves, persistence);
+            noises2[x][y] = perlin.octave2D_01(xpos, ypos, octaves, persistence);
+
         }
     }
 
@@ -202,6 +264,13 @@ void FuzzyEureka::LoadFromPearlyNoise(const int width, const int height)
                     return cliff.CreateSprite(1, 1); // Default mountain
                 }
             };
+            
+
+            sf::Vector2f position(x*nodeSize.x, y *nodeSize.y);
+            // if(isTree(noises2[x][y]))
+            // {
+            
+
 
             auto noise = noises[x][y];
 
@@ -217,10 +286,17 @@ void FuzzyEureka::LoadFromPearlyNoise(const int width, const int height)
     for(int i = 0; i < width; ++i) 
         delete[] noises[i];   
     delete[] noises;
+
+    for(int i = 0; i < width; ++i) 
+        delete[] noises2[i];   
+    delete[] noises2;
 }
 
 void FuzzyEureka::Start()
 {
+
+
+
     width = 256;
     height = 256;
     nodeSize = sf::Vector2i{16, 16};

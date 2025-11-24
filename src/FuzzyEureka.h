@@ -1,5 +1,6 @@
 #pragma once 
 #include "Engine/Application.h"
+#include "Engine/Content.h"
 #include <memory>
 #include "Grid.h"
 #include <vector>
@@ -90,6 +91,8 @@ private:
     // sf::Clock clock;
     // sf::Time currentTime;
     // sf::Time previousTime;
+
+    Content content;
 
     TileSet cliff;
     TileSet cliffWater;
