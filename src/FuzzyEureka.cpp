@@ -51,7 +51,7 @@ FuzzyEureka::FuzzyEureka()
     content.LoadTexture2D("Buildings/Wood/Workshops.png", x16);
 
     content.LoadTexture2D("Nature/Cactus.png", x16);
-    content.LoadTexture2D("Nature/Coconut.png", x16);
+    content.LoadTexture2D("Nature/CoconutTrees.png", x16);
     content.LoadTexture2D("Nature/DeadTrees.png", x16);
     content.LoadTexture2D("Nature/PineTrees.png", x16);
     content.LoadTexture2D("Nature/Rocks.png", x16);
@@ -73,7 +73,7 @@ FuzzyEureka::FuzzyEureka()
 
     content.LoadTexture2D("Characters/Soldiers/Ranged/BowmanTemplate.png", x16);
     content.LoadTexture2D("Characters/Soldiers/Ranged/MageTemplate.png", x16);
-    content.LoadTexture2D("Characters/Soldiers/Ranged/Balista.png", x16);
+    content.LoadTexture2D("Characters/Soldiers/Ranged/Ballista.png", x16);
 
     content.LoadTexture2D("User Interface/Highlighted-Boxes.png", x16);
     content.LoadTexture2D("User Interface/BoxSelector.png", x16);
