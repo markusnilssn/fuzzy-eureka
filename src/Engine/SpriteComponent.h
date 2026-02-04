@@ -1,5 +1,5 @@
 #pragma once
-#include <SFML/Graphics.hpp>    
+#include <SFML/Graphics.hpp>
 #include <SFML/System.hpp>
 
 #include <unordered_map>
@@ -19,16 +19,18 @@ namespace Animation
 {
     namespace Walk
     {
-        inline constexpr const char* Left = "walk-left";
-        inline constexpr const char* Right = "walk-left";
-        inline constexpr const char* Up = "walk-left";
-        inline constexpr const char* Down = "walk-left";
+        inline constexpr const char *Left = "walk-left";
+        inline constexpr const char *Right = "walk-left";
+        inline constexpr const char *Up = "walk-left";
+        inline constexpr const char *Down = "walk-left";
     }
 
-    namespace Action {}
+    namespace Action
+    {
+    }
 }
 
-// Cannot be RAII 
+// Cannot be RAII
 struct SpriteSheet final
 {
     using Sequence = std::vector<sf::IntRect>;
@@ -37,14 +39,14 @@ struct SpriteSheet final
     sf::Vector2i clipSize;
     std::unordered_map<size_t, Sequence> sequences;
 
-    void LoadTexture(const std::string& filePath, const sf::Vector2i clipSize)
+    void LoadTexture(const std::string &filePath, const sf::Vector2i clipSize)
     {
         bool success = texture.loadFromFile(filePath, false);
         Debug::Assert(success, "Failed to load sprite sheet");
         this->clipSize = clipSize;
     }
 
-    void Cut(const std::string& name, const sf::Vector2i& start, const sf::Vector2i& end) 
+    void Cut(const std::string &name, const sf::Vector2i &start, const sf::Vector2i &end)
     {
         size_t hashCode = std::hash<std::string>{}(name);
 
@@ -62,11 +64,11 @@ struct SpriteSheet final
 
             sequence.emplace_back(sf::IntRect(sf::Vector2i(x * clipSize.x, y * clipSize.y), clipSize));
         }
-        
+
         sequences.insert({hashCode, std::move(sequence)});
     }
 
-    const Sequence& GetSequence(const std::string& name)
+    const Sequence &GetSequence(const std::string &name)
     {
         size_t hashCode = std::hash<std::string>{}(name);
 
@@ -79,11 +81,11 @@ struct SpriteSheet final
 //     [[nodiscard]] float AsSeconds() noexcept;
 //     [[nodiscard]] float AsMilliseconds() noexcept;
 //     [[nodiscard]] float AsMinutes() noexcept;
-    
+
 //     float seconds;
 // };
 
-struct AnimatorComponent 
+struct AnimatorComponent
 {
     SpriteSheet spriteSheet;
     std::string animation;
@@ -95,10 +97,9 @@ struct AnimatorComponent
     bool animating = false;
 };
 
-struct SpriteComponent 
+struct SpriteComponent
 {
     sf::Texture texture;
     uint_fast16_t sortLayer;
     sf::Color color = sf::Color::White;
 };
-

@@ -38,6 +38,9 @@ protected:
     virtual void Render(sf::RenderWindow& window) {}
     virtual void HandleEvent(const std::optional<sf::Event>& event) {}
 
+    virtual void LoadContent() {}
+    virtual void UnloadContent() {}
+
     sf::RenderWindow& GetWindow();
     Input& GetInput();
     Concurrency& GetConcurrency();
